@@ -1,0 +1,2 @@
+option('build', type : 'string', value : 'debug', description : 'specifies build profile')
+
