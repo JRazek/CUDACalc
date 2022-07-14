@@ -4,7 +4,13 @@
 
 auto main() -> int { 
 
-	cuda::calc::riemann_integral(cuda::calc::R_RFunction{}, 2);
+	constexpr auto function1=[](std::array<double, 1> const& x) -> double { return 2*x[0]; };
+	auto derivative=[](double x) -> double { return 2; };
+	auto integral=[](double x) -> double { return x*x; };
 
-	auto test=cuda::calc::R_RFunction::dim_value;
+	std::array ranges{std::pair(.0, .1)};
+	std::array deltas{.1};
+
+	auto res=cuda::calc::riemann_integral<decltype(function1), double>(function1, ranges, deltas);
+
 }

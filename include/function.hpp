@@ -2,11 +2,9 @@
 
 #include <concepts>
 #include <type_traits>
+#include <concepts.hpp>
 
 namespace cuda::calc{
 
-struct R_RFunction{
-	static constexpr auto dim_value=1u;
-};
 
 }
