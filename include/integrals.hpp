@@ -45,9 +45,9 @@ auto riemann_integral(
 	}
 
 	if constexpr (mode==CalculationMode::cpu) {
-
+		
 	}
-	else if constexpr (mode==CalculationMode::cuda){
+	else if constexpr (mode==CalculationMode::cuda) {
 
 	}
 

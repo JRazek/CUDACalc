@@ -5,24 +5,29 @@ project(
 )
 
 cpp = meson.get_compiler('cpp')
+cuda = meson.get_compiler('cuda')
 
-thrust_dep = dependency('thrust')
 
 incdir = include_directories(
     'include',
     'src',
 )
 
+
 cpp_args=[]
 cpp_link_args=[]
-cuda_args=[]
+cuda_args=['-std=c++17']
+
+thrust_dep = dependency('thrust')
 
 exec=executable(
     'CUDACalc',
     'src/main.cpp',
+    'src/integrals.cu',
     include_directories : incdir,
     cpp_args: cpp_args,
 	link_args: cpp_link_args,
     cuda_args: cuda_args,
+    dependencies: [thrust_dep]
 )
 
