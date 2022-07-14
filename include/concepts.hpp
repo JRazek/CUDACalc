@@ -4,14 +4,19 @@
 #include <type_traits>
 #include <tuple>
 
-namespace cuda::calc{
+namespace jr::calc{
 
 namespace params_counter{
 
 template <typename T>
 concept ClassType = std::is_class_v<T>;
 
-template <typename Type, typename = void> 
+template <typename T>
+concept HasCallableOperator = requires {
+    { &T::operator() };
+};
+
+template <typename Type>
 struct FunctionArgs {
     using args = void;
 };
@@ -37,7 +42,8 @@ struct FunctionArgs<auto (ClassType::*)(Ts...) const -> Ret> {
 };
 
 template <typename Functor>
-struct FunctionArgs<Functor, std::void_t<decltype(&Functor::operator())>> {
+requires HasCallableOperator<Functor>
+struct FunctionArgs<Functor> {
     using args = typename FunctionArgs<decltype(&Functor::operator())>::args;
 };
 

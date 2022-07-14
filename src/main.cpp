@@ -1,6 +1,7 @@
-#include "function.hpp"
 #include <iostream>
-#include <integrals.hpp>
+#include "integrals.hpp"
+#include "utils.hpp"
+#include <array>
 
 auto main() -> int { 
 
@@ -11,6 +12,6 @@ auto main() -> int {
 	std::array ranges{std::pair(.0, .1)};
 	std::array deltas{.1};
 
-	auto res=cuda::calc::riemann_integral<decltype(function1), double>(function1, ranges, deltas);
+	auto res=jr::calc::riemann_integral<decltype(function1), double, jr::calc::CalculationMode::cpu>(function1, ranges, deltas);
 
 }
