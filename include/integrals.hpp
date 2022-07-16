@@ -2,11 +2,15 @@
 
 #include "utils.hpp"
 #include <concepts>
+#include <cstddef>
+#include <functional>
 #include <type_traits>
 #include <array>
 #include <concepts.hpp>
 #include <utility>
 #include <cmath>
+#include <iostream>
+#include <numeric>
 
 
 namespace jr::calc{
@@ -38,20 +42,54 @@ auto riemann_integral(
 		ParamSizedArray<T, Function> const& deltas
 ) -> std::invoke_result_t<Function, ParamSizedArray<T, Function>> {
 
+
+	auto result=T();
+
+	constexpr auto N = params_counter::FunctionArgsCount<Function>;
+
 	std::size_t ker_count=1;
 
+	using SizesArray=std::array<std::size_t, N>;
+
+	SizesArray sizes;
+
 	for(auto i=std::size_t();i<ranges.size();i++){
-		ker_count *= std::ceil((double(ranges[i].second-ranges[i].first))/deltas[i]);
+		sizes[i] = std::ceil((double(ranges[i].second-ranges[i].first))/deltas[i]);
+		ker_count *= sizes[i];
 	}
+
 
 	if constexpr (mode==CalculationMode::cpu) {
+		auto calculate_accumulated_product = [](auto const& sizes){
+			auto arr=sizes;
+			
+			for(auto i=1u;i<arr.size();i++) 
+				arr[i] *= arr[i-1];
+
+			return arr;
+		};
 		
+		auto accumulated_product=calculate_accumulated_product(sizes);
+
+		nested_for_loop(
+				accumulated_product, 
+				[&result, &function, &deltas, N](SizesArray const& index_pack){
+					std::array<T, N> point;
+
+					for(auto i=0u;i<N;i++)
+						point[i]=index_pack[i] * deltas[i];
+
+					result+=function(point);
+				}
+		);
+
+		result *= std::accumulate(deltas.begin(), deltas.end(), T(1), std::multiplies<T>());
 	}
 	else if constexpr (mode==CalculationMode::cuda) {
-
+		
 	}
 
-	return 0;
+	return result;
 }
 
 
