@@ -15,8 +15,12 @@
 
 namespace jr::calc{
 
+namespace detailed{
+
 template<typename T, typename Function>
-using ParamSizedArray = std::array<T, params_counter::FunctionArgsCount<Function>>;
+using ParamSizedArray = std::array<T, params_counter::ArraySizeFromCallable<Function>>;
+
+}
 
 /**
 * @brief calculates approximated value of riemann integral
@@ -38,14 +42,14 @@ template<
 >
 auto riemann_integral(
 		Function function, 
-		std::array<std::pair<T, T>, params_counter::FunctionArgsCount<Function>> const& ranges,
-		ParamSizedArray<T, Function> const& deltas
-) -> std::invoke_result_t<Function, ParamSizedArray<T, Function>> {
+		detailed::ParamSizedArray<std::pair<T, T>, Function> const& ranges,
+		detailed::ParamSizedArray<T, Function> const& deltas
+) -> std::invoke_result_t<Function, detailed::ParamSizedArray<T, Function>> {
 
 
 	auto result=T();
 
-	constexpr auto N = params_counter::FunctionArgsCount<Function>;
+	constexpr auto N = params_counter::ArraySizeFromCallable<Function>;
 
 	std::size_t ker_count=1;
 
@@ -58,11 +62,8 @@ auto riemann_integral(
 		ker_count *= sizes[i];
 	}
 
-
 	if constexpr (mode==CalculationMode::cpu) {
-		auto calculate_accumulated_product = [](auto const& sizes){
-			auto arr=sizes;
-			
+		auto calculate_accumulated_product = [](auto arr){
 			for(auto i=1u;i<arr.size();i++) 
 				arr[i] *= arr[i-1];
 
@@ -72,18 +73,18 @@ auto riemann_integral(
 		auto accumulated_product=calculate_accumulated_product(sizes);
 
 		nested_for_loop(
-				accumulated_product, 
-				[&result, &function, &deltas, N](SizesArray const& index_pack){
-					std::array<T, N> point;
+			accumulated_product, 
+			[&result, &function, &deltas, N](SizesArray const& index_pack){
+				std::array<T, N> point;
 
-					for(auto i=0u;i<N;i++)
-						point[i]=index_pack[i] * deltas[i];
+				for(auto i=0u;i<N;i++)
+					point[i] = index_pack[i] * deltas[i];
 
-					result+=function(point);
-				}
+				result += function(point);
+			}
 		);
 
-		result *= std::accumulate(deltas.begin(), deltas.end(), T(1), std::multiplies<T>());
+//		result *= std::accumulate(deltas.begin(), deltas.end(), T(1), std::multiplies<T>());
 	}
 	else if constexpr (mode==CalculationMode::cuda) {
 		

@@ -9,28 +9,6 @@
 
 namespace jr::calc{
 
-
-namespace detail{
-
-template <
-	std::size_t Nm,
-	std::size_t kDepth,
-	typename Runnable,
-	typename... Args
->
-auto nested_for_loop_helper(std::array<std::size_t, Nm> const& dims, std::array<std::size_t, Nm>& index_pack, Runnable const& runnable, Args&&... args) -> void {
-	for(auto i=0u;i<dims[kDepth];i++){
-		index_pack[kDepth]=i;
-
-		if constexpr (kDepth<Nm-1)
-			nested_for_loop_helper<Nm, kDepth+1>(dims, index_pack, runnable, std::forward<Args>(args)...);
-		else
-			runnable(index_pack, args...);
-	}
-}
-
-}
-
 /**
 * @brief - provides interface for nested for loops
 *
@@ -47,12 +25,18 @@ template <
 >
 requires std::invocable<Runnable, std::array<std::size_t, Nm>, Args...>
 auto nested_for_loop(std::array<std::size_t, Nm> const& dims, Runnable const& runnable, Args&&... args) -> void {
-	std::array<std::size_t, Nm> index_pack{0};
+	auto acummulated_products=dims;
+	for(auto i=1u;i<Nm;i++) acummulated_products[i]*=acummulated_products[i-1];
 
-	detail::nested_for_loop_helper<Nm, 0>(dims, index_pack, runnable, std::forward<Args>(args)...);
-
+	auto n=acummulated_products.back();
+	for(auto i=0u;i<n;i++){
+		std::array<std::size_t, Nm> index_pack;
+		for(auto d=0u;d<Nm;d++){
+			index_pack[d] = (i % acummulated_products[d]) / (d!=0 ? acummulated_products[d-1] : 1);
+		}
+		runnable(index_pack, std::forward<Args>(args)...);
+	}
 }
-
 
 enum class CalculationMode{
 	cpu,

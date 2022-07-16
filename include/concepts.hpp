@@ -2,6 +2,7 @@
 
 #include <concepts>
 #include <type_traits>
+#include <array>
 #include <tuple>
 
 namespace jr::calc{
@@ -49,6 +50,13 @@ struct FunctionArgs<Functor> {
 
 template <typename T>
 static constexpr auto FunctionArgsCount = std::tuple_size_v<typename FunctionArgs<T>::args>;
+
+template <typename T>
+static constexpr auto ArraySizeFromCallable = std::tuple_size_v<
+	std::remove_cvref_t<
+			std::tuple_element_t<0, typename FunctionArgs<T>::args>
+	>
+>;
 
 }
 
