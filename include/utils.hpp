@@ -29,11 +29,13 @@ auto nested_for_loop(std::array<std::size_t, Nm> const& dims, Runnable const& ru
 	for(auto i=1u;i<Nm;i++) acummulated_products[i]*=acummulated_products[i-1];
 
 	auto n=acummulated_products.back();
+
 	for(auto i=0u;i<n;i++){
-		std::array<std::size_t, Nm> index_pack;
-		for(auto d=0u;d<Nm;d++){
-			index_pack[d] = (i % acummulated_products[d]) / (d!=0 ? acummulated_products[d-1] : 1);
-		}
+		std::array<std::size_t, Nm> index_pack{i%acummulated_products[0]};
+
+		for(auto d=1u;d<Nm;d++)
+			index_pack[d] = i % acummulated_products[d] / acummulated_products[d-1];
+
 		runnable(index_pack, std::forward<Args>(args)...);
 	}
 }

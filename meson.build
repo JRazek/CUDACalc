@@ -14,9 +14,17 @@ incdir = include_directories(
 )
 
 
-cpp_args=[]
+cpp_build_args=[]
 cpp_link_args=[]
 cuda_args=['-std=c++17']
+
+if get_option('build')=='release'
+    cpp_build_args += ['-O3', '-Wall', '-DNDEBUG', '-g0', '-s']
+else
+	cpp_build_args += ['-g3','-fsanitize=undefined,float-cast-overflow,float-divide-by-zero,bounds-strict,address,', '-Wall']
+	cpp_link_args += cpp_build_args 
+endif
+
 
 thrust_dep = dependency('thrust')
 
@@ -25,7 +33,7 @@ exec=executable(
     'src/main.cpp',
     'src/integrals.cu',
     include_directories : incdir,
-    cpp_args: cpp_args,
+    cpp_args: cpp_build_args,
 	link_args: cpp_link_args,
     cuda_args: cuda_args,
     dependencies: [thrust_dep]
