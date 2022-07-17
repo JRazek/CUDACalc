@@ -16,17 +16,17 @@ incdir = include_directories(
 
 cpp_build_args=[]
 cpp_link_args=[]
-cuda_args=['-std=c++17']
+cuda_args=['-std=c++17', '--extended-lambda']
 
-if get_option('build')=='release'
-    cpp_build_args += ['-O3', '-Wall', '-DNDEBUG', '-g0', '-s']
-else
-	cpp_build_args += ['-g3','-fsanitize=undefined,float-cast-overflow,float-divide-by-zero,bounds-strict,address,', '-Wall']
-	cpp_link_args += cpp_build_args 
-endif
-
+#if get_option('build')=='release'
+#    cpp_build_args += ['-O3', '-Wall', '-DNDEBUG', '-g0', '-s']
+#else
+#	cpp_build_args += ['-g3','-fsanitize=undefined,float-cast-overflow,float-divide-by-zero,bounds-strict,address,', '-Wall']
+#	cpp_link_args += cpp_build_args 
+#endif
 
 thrust_dep = dependency('thrust')
+cuda_dep = dependency('cuda')
 
 exec=executable(
     'CUDACalc',
@@ -36,6 +36,6 @@ exec=executable(
     cpp_args: cpp_build_args,
 	link_args: cpp_link_args,
     cuda_args: cuda_args,
-    dependencies: [thrust_dep]
+    dependencies: [thrust_dep, cuda_dep]
 )
 

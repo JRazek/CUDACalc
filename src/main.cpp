@@ -4,23 +4,28 @@
 #include <array>
 #include <memory>
 #include <cmath>
+#include <integrals.cuh>
 
 
 auto main() -> int { 
 
-	constexpr auto function1=[](std::array<double, 1> const& x) -> double { 
-		return std::sin(x[0]);
-	};
+//	constexpr auto function1=[](std::array<double, 2> const& x) -> double { 
+//		return std::sin(x[0]) + std::cos(x[1]);
+//	};
 //	auto derivative=[](double x) -> double { return 2; };
 //	auto integral=[](double x) -> double { return x*x; };
+	auto zero_pi_range=std::pair(0., std::numbers::pi_v<double>);
+	std::array ranges{zero_pi_range, zero_pi_range};
 
-	std::array ranges{std::pair(0., std::numbers::pi_v<double>)};
-	std::array deltas{.001};
+	std::array deltas{.001, .001};
 
-	auto res=jr::calc::riemann_integral(function1, ranges, deltas);
+	auto res=jr::calc::riemann_integral<jr::calc::CalculationMode::cuda>(jr::calc::cuda::cuda_function_wrapper{}, ranges, deltas);
 
 
 	std::cout<<res<<'\n';
+
+	
+
 //
 
 	
