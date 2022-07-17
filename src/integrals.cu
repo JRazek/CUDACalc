@@ -1,12 +1,16 @@
+#include <cstdio>
 #include <thrust/device_ptr.h>
 #include <thrust/device_vector.h>
 #include <thrust/iterator/zip_iterator.h>
 #include <cuda_runtime_api.h>
 #include <cuda.h>
 #include <cassert>
-
-#include "integrals.cuh"
 #include "cuda_api.hpp"
+
+#include "user_kernels.hpp"
+
+#ifdef USER_KERNEL_FILE
+#endif
 
 
 namespace jr::calc::cuda{
@@ -14,7 +18,11 @@ namespace jr::calc::cuda{
 template<typename Function>
 __global__
 void kernel(Function const& function){
-	//function();
+	auto id=threadIdx.x;
+
+	std::printf("thread_id=%d\n", id);
+
+	function();
 }
 
 auto riemann_integral(
@@ -32,7 +40,15 @@ auto riemann_integral(
 
 	auto zipped = thrust::make_zip_iterator(thrust::make_tuple(ranges_dev.begin(), deltas_dev.begin()));
 
+	auto runnable = []__device__(){
+		return 1;
+	};
 
+
+	auto samples_count=1;
+
+
+	kernel<<<10,1>>>(wrapper);	
 
 	return 0;
 

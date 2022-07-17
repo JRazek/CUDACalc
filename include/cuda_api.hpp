@@ -1,8 +1,12 @@
 #pragma once
-#include "integrals.cuh"
+
 #include <vector>
 #include <utility>
 #include <thrust/pair.h>
+
+#include <array>
+
+#include "user_kernels.hpp"
 
 namespace jr::calc::cuda{
 

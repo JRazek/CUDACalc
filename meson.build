@@ -10,6 +10,7 @@ cuda = meson.get_compiler('cuda')
 
 incdir = include_directories(
     'include',
+    'user_kernels',
     'src',
 )
 

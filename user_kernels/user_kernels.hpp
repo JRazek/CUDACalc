@@ -1,8 +1,5 @@
 #pragma once
 
-#include <array>
-
-
 #ifdef __NVCC__
 
 #include <cuda/std/array>
@@ -11,9 +8,7 @@
 
 #endif //__NVCC__
 
-namespace jr{
-namespace calc{
-namespace cuda{
+namespace jr::calc::cuda{
 
 
 struct cuda_function_wrapper{
@@ -35,7 +30,4 @@ auto operator()() const -> void{
 #endif //__NVCC__
 
 
-
-}
-}
 }

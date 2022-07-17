@@ -4,8 +4,9 @@
 #include <array>
 #include <memory>
 #include <cmath>
-#include <integrals.cuh>
+#include "user_kernels.hpp"
 
+#define __TEST__123321__ static_assert(false);
 
 auto main() -> int { 
 

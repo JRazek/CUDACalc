@@ -12,8 +12,9 @@
 #include <iostream>
 #include <numeric>
 #include <cassert>
-#include "integrals.cuh"
+
 #include "cuda_api.hpp"
+#include "user_kernels.hpp"
 
 
 namespace jr::calc{
@@ -80,12 +81,40 @@ auto riemann_integral(
 		result *= std::accumulate(deltas.begin(), deltas.end(), T(1), std::multiplies<T>());
 	}
 	else if constexpr (mode==CalculationMode::cuda) {
-		
 		jr::calc::cuda::riemann_integral(function, ranges, deltas);
 	}
 
 	return result;
 }
+
+
+/**
+* @brief calculates approximated derivative of a function
+*
+* @tparam Function - type of function to differentiate
+* @tparam T - return type of function
+* @param function - function to differentiate
+* @param ranges - cartesian product of differentiation point ()
+* @param deltas - deltas for differentiation (dx, dy, ...)
+*
+* @note ranges of integration are in relative order to deltas.
+*
+* @return 
+*/
+template<
+	Arithmetic T,
+	RealFunction Function,
+	std::size_t Nm
+>
+auto calculate_gradient(
+		Function function, 
+		std::array<T, Nm> const& point,
+		std::array<T, Nm> const& deltas
+) -> T {
+	assert(false);
+}
+
+
 
 
 }
