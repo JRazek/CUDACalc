@@ -88,6 +88,8 @@ auto riemann_integral(
 
 	cudaDeviceSynchronize();
 
+	std::cout<<"size: "<<result_dev_vector.size()<<'\n';
+
 	return thrust::reduce(result_dev_vector.begin(), result_dev_vector.end(), T(0), thrust::plus<T>());
 }
 

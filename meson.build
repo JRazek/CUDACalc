@@ -22,6 +22,7 @@ cpp_link_args=[
 ]
 
 
+cpp_build_args += ['-O3', '-Wall', '-DNDEBUG', '-g0']
 #if get_option('build')=='release'
 #    cpp_build_args += ['-O3', '-Wall', '-DNDEBUG', '-g0', '-s']
 #else

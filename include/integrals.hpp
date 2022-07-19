@@ -55,9 +55,7 @@ auto riemann_integral(
 ) -> T {
 	auto result=T();
 
-	constexpr auto N = Nm;
-
-	using SizesArray=std::array<std::size_t, N>;
+	using SizesArray=std::array<std::size_t, Nm>;
 
 	SizesArray dims;
 
@@ -67,10 +65,10 @@ auto riemann_integral(
 	if constexpr (mode==CalculationMode::cpu) {
 		nested_for_loop(
 			dims,
-			[&result, &function, &deltas, N](SizesArray const& index_pack){
-				std::array<T, N> point;
+			[&result, &function, &deltas](SizesArray const& index_pack){
+				std::array<T, Nm> point;
 
-				for(auto i=0u;i<N;i++)
+				for(auto i=0u;i<Nm;i++)
 					point[i] = index_pack[i] * deltas[i];
 
 				result += function(point);
