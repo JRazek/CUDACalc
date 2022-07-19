@@ -25,12 +25,14 @@ cpp_link_args=['-stdlib=libc++']
 
 thrust_dep = dependency('thrust')
 
+cuda_lib=cpp.find_library('cudart_static', dirs: '/usr/local/cuda/lib64', required: true)
+
 cuda_calc_library = static_library(
     'cuda_calc',
     include_directories : incdir,
     cpp_args: cpp_build_args,
 	link_args: cpp_link_args,
-    dependencies: [thrust_dep]
+    dependencies: [thrust_dep, cuda_lib]
 )
 
 
