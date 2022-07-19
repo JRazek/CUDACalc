@@ -11,7 +11,7 @@ incdir = include_directories(
 )
 
 
-cpp_build_args=['-stdlib=libc++']
+cpp_build_args=['-stdlib=libc++', '-xcuda']
 cpp_link_args=['-stdlib=libc++']
 
 
