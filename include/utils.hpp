@@ -25,16 +25,16 @@ template <
 >
 requires std::invocable<Runnable, std::array<std::size_t, Nm>, Args...>
 auto nested_for_loop(std::array<std::size_t, Nm> const& dims, Runnable const& runnable, Args&&... args) -> void {
-	auto acummulated_products=dims;
-	for(auto i=1u;i<Nm;i++) acummulated_products[i]*=acummulated_products[i-1];
+	auto accumulated_products=dims;
+	for(auto i=1u;i<Nm;i++) accumulated_products[i]*=accumulated_products[i-1];
 
-	auto n=acummulated_products.back();
+	auto n=accumulated_products.back();
 
 	for(auto i=0u;i<n;i++){
-		std::array<std::size_t, Nm> index_pack{i%acummulated_products[0]};
+		std::array<std::size_t, Nm> index_pack{i%accumulated_products[0]};
 
 		for(auto d=1u;d<Nm;d++)
-			index_pack[d] = i % acummulated_products[d] / acummulated_products[d-1];
+			index_pack[d] = i % accumulated_products[d] / accumulated_products[d-1];
 
 		runnable(index_pack, std::forward<Args>(args)...);
 	}

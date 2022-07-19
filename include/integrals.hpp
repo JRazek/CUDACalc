@@ -47,7 +47,7 @@ template<
 requires 
 (mode == CalculationMode::cpu && params_counter::ArraySizeFromCallable<Function> == Nm)
 	or
-(mode == CalculationMode::cuda && std::is_same_v<T, double>)
+(mode == CalculationMode::cuda)
 auto riemann_integral(
 		Function function, 
 		std::array<std::pair<T, T>, Nm> const& ranges,
@@ -80,7 +80,7 @@ auto riemann_integral(
 		result *= std::accumulate(deltas.begin(), deltas.end(), T(1), std::multiplies<T>());
 	}
 	else if constexpr (mode==CalculationMode::cuda) {
-		jr::calc::cuda::riemann_integral(function, ranges, deltas);
+		result=jr::calc::cuda::riemann_integral(function, ranges, deltas);
 	}
 
 	return result;
