@@ -1,23 +1,19 @@
 project(
-    'CUDACalc', 'c', 'cpp', 'cuda',
+    'CUDACalc', 'c', 'cpp', 
     version: '0.1.0',
     default_options : ['c_std=c18', 'cpp_std=c++20']
 )
 
 cpp = meson.get_compiler('cpp')
-cuda = meson.get_compiler('cuda')
-
 
 incdir = include_directories(
     'include',
-    'user_kernels',
-    'src',
 )
 
 
-cpp_build_args=[]
+cpp_build_args=['-xcuda', '-stdlib=libc++']
 cpp_link_args=[]
-cuda_args=['-std=c++17', '--extended-lambda']
+
 
 #if get_option('build')=='release'
 #    cpp_build_args += ['-O3', '-Wall', '-DNDEBUG', '-g0', '-s']
@@ -26,17 +22,22 @@ cuda_args=['-std=c++17', '--extended-lambda']
 #	cpp_link_args += cpp_build_args 
 #endif
 
-thrust_dep = dependency('thrust')
-cuda_dep = dependency('cuda')
 
-exec=executable(
-    'CUDACalc',
-    'src/main.cpp',
-    'src/integrals.cu',
+thrust_dep = dependency('thrust')
+
+cuda_lib=cpp.find_library('cudart_static', dirs: '/usr/local/cuda/lib64', required: true)
+
+cuda_calc_library = static_library(
+    'cuda_calc',
     include_directories : incdir,
     cpp_args: cpp_build_args,
 	link_args: cpp_link_args,
-    cuda_args: cuda_args,
-    dependencies: [thrust_dep, cuda_dep]
+    dependencies: [thrust_dep, cuda_lib]
 )
+
+
+cuda_calc = declare_dependency(include_directories: incdir, link_with : cuda_calc_library)
+
+
+subdir('example')
 

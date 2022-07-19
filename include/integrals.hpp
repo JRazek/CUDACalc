@@ -13,8 +13,7 @@
 #include <numeric>
 #include <cassert>
 
-#include "cuda_api.hpp"
-#include "user_kernels.hpp"
+#include "integrals_cuda.hpp"
 
 
 namespace jr::calc{
