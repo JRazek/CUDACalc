@@ -74,9 +74,12 @@ auto run_test(Function const& function, Integral const& analytic_integral, TestP
 	EXPECT_NEAR(real_result, res_cuda, 0.1);
 }
 
-TEST_F(IntegralCudaTest2D, SinCosProd) {
+
+
+//TODO
+TEST_F(IntegralCudaTest2D, SinCosProd) { 
 	constexpr auto function=[](std::array<double, 2> const& x) -> double { 
-		return 1;
+		return std::sin(x[0]) + std::cos(x[1]);
 	};
 
 	constexpr auto analytic_integral = [](std::array<std::pair<double, double>, 2> const& ranges) -> double { 
