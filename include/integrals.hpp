@@ -46,8 +46,6 @@ template<
 >
 requires 
 (mode == CalculationMode::cpu && params_counter::ArraySizeFromCallable<Function> == Nm)
-	or
-(mode == CalculationMode::cuda)
 auto riemann_integral(
 		Function function, 
 		std::array<std::pair<T, T>, Nm> const& ranges,
@@ -62,28 +60,52 @@ auto riemann_integral(
 	for(auto i=std::size_t();i<ranges.size();i++)
 		dims[i] = std::ceil((double(ranges[i].second-ranges[i].first))/deltas[i]);
 
-	if constexpr (mode==CalculationMode::cpu) {
-		nested_for_loop(
-			dims,
-			[&result, &function, &deltas](SizesArray const& index_pack){
-				std::array<T, Nm> point;
+	nested_for_loop(
+		dims,
+		[&result, &function, &deltas](SizesArray const& index_pack){
+			std::array<T, Nm> point;
 
-				for(auto i=0u;i<Nm;i++)
-					point[i] = index_pack[i] * deltas[i];
+			for(auto i=0u;i<Nm;i++)
+				point[i] = index_pack[i] * deltas[i];
 
-				result += function(point);
-			}
-		);
+			result += function(point);
+		}
+	);
 
-		result *= std::accumulate(deltas.begin(), deltas.end(), T(1), std::multiplies<T>());
-	}
-	else if constexpr (mode==CalculationMode::cuda) {
-		result=jr::calc::cuda::riemann_integral(function, ranges, deltas);
-	}
+	result *= std::accumulate(deltas.begin(), deltas.end(), T(1), std::multiplies<T>());
 
 	return result;
 }
 
+/**
+* @brief calculates approximated value of riemann integral
+*
+* @tparam Function - type of function to integrate
+* @tparam T - return type of integral
+* @param function - function to integrate
+* @param ranges - ranges of integration
+* @param deltas - deltas for integration
+*
+* @note ranges of integration are in relative order to deltas.
+*
+* @return 
+*/
+template<
+	CalculationMode mode,
+	std::size_t kBlockSize = 64,
+	Arithmetic T,
+	RealFunction Function,
+	std::size_t Nm
+>
+requires 
+(mode == CalculationMode::cuda)
+auto riemann_integral(
+		Function function, 
+		std::array<std::pair<T, T>, Nm> const& ranges,
+		std::array<T, Nm> const& deltas
+) -> T {
+	return jr::calc::cuda::riemann_integral(function, ranges, deltas);
+}
 
 /**
 * @brief calculates approximated derivative of a function

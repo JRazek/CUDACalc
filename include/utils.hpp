@@ -6,6 +6,10 @@
 #include <concepts>
 #include <utility>
 #include <iostream>
+#include <ranges>
+#include <iterator>
+#include <cuda_runtime_api.h>
+
 
 namespace jr::calc{
 
@@ -44,6 +48,20 @@ enum class CalculationMode{
 	cpu,
 	cuda,
 };
+
+
+namespace cuda{
+
+template<
+	typename Input,
+	typename Output
+>
+__device__
+auto copy(Input const& input, Output output, std::size_t size) -> void{
+	memcpy(output, input, size);
+}
+
+}
 
 
 }

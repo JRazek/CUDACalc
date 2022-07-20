@@ -10,8 +10,6 @@
 
 namespace jr::calc::cuda{
 
-constexpr static auto kBlockSize = 64u;
-
 template<
 	std::size_t Nm
 >
@@ -26,7 +24,7 @@ auto get_index_pack(std::array<std::size_t, Nm> const& accumulated_products, std
 }
 
 __host__ __device__
-auto print(auto const& range){
+auto print(auto const& range) -> void{
 	for(auto const c : range){
 		printf("%d", c);	
 	}
@@ -38,8 +36,19 @@ template<
 	RealFunction Function
 >
 __global__
-void riemann_integral_kernel(Function const& function, std::array<T, Nm> deltas, std::array<std::size_t, Nm> accumulated_products, T* data_ptr){
+auto riemann_integral_kernel(Function const& function, std::size_t* deltas, T* data_ptr) -> void{
 	auto const id=threadIdx.x + blockIdx.x*blockDim.x;
+
+	__shared__
+	std::array<std::size_t, Nm> accumulated_products;
+
+	if(threadIdx.x == 0){
+		copy(deltas, accumulated_products.begin(), Nm);
+		for(auto i=1u;i<Nm;i++)
+			accumulated_products[i] *= accumulated_products[i-1];
+	}
+
+	__syncthreads();
 
 	if(id<accumulated_products.back()){
 		auto index_pack = get_index_pack(accumulated_products, id);
@@ -57,6 +66,7 @@ void riemann_integral_kernel(Function const& function, std::array<T, Nm> deltas,
 
 template<
 	Arithmetic T,
+	std::size_t kBlockSize = 64,
 	RealFunction Function,
 	std::size_t Nm
 >
@@ -73,9 +83,8 @@ auto riemann_integral(
 	for(auto i=0u;i<ranges.size();i++)
 		accumulated_products[i] = std::ceil((double(ranges[i].second-ranges[i].first))/deltas[i]);
 
-	for(auto i=1u;i<ranges.size();i++){
+	for(auto i=1u;i<ranges.size();i++)
 		accumulated_products[i] *= accumulated_products[i-1];
-	}
 
 	auto total_count=accumulated_products.back();
 
@@ -83,8 +92,10 @@ auto riemann_integral(
 	thrust::device_vector<T> result_dev_vector(total_count);
 	thrust::device_vector<T> accumulated_products_dev(accumulated_products.begin(), accumulated_products.end());
 
+	thrust::device_vector<std::size_t> deltas_dev(deltas.begin(), deltas.end());
 
-	riemann_integral_kernel<<<total_count/kBlockSize+1, kBlockSize>>>(function, deltas, accumulated_products, thrust::raw_pointer_cast(result_dev_vector.data()));
+
+	riemann_integral_kernel<T, Nm><<<total_count/kBlockSize+1, kBlockSize>>>(function, thrust::raw_pointer_cast(deltas_dev.data()), thrust::raw_pointer_cast(result_dev_vector.data()));
 
 	cudaDeviceSynchronize();
 
