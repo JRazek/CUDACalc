@@ -43,33 +43,32 @@ auto main() -> int {
 		return std::pair(res_cuda, duration);
 	});
 
-	auto cpu_thread = std::async(std::launch::async, [function1, ranges, deltas]{
-		auto start = std::chrono::steady_clock::now();
-
-		auto res_cpu=jr::calc::riemann_integral(function1, ranges, deltas);
-
-		auto end = std::chrono::steady_clock::now();
-
-		auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
-
-		return std::pair(res_cpu, duration);
-	});
+//	auto cpu_thread = std::async(std::launch::async, [function1, ranges, deltas]{
+//		auto start = std::chrono::steady_clock::now();
+//
+//		auto res_cpu=jr::calc::riemann_integral(function1, ranges, deltas);
+//
+//		auto end = std::chrono::steady_clock::now();
+//
+//		auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
+//
+//		return std::pair(res_cpu, duration);
+//	});
 
 	cuda_thread.wait();
 
-	cpu_thread.wait();
+//	cpu_thread.wait();
 
 
 	auto [res_cuda, duration_cuda]=cuda_thread.get();
 
-	auto [res_cpu, duration_cpu]=cpu_thread.get();
+//	auto [res_cpu, duration_cpu]=cpu_thread.get();
 
 	print_res("cuda", duration_cuda, "ns");
 
-	print_res("cpu", duration_cpu, "ns");
+//	print_res("cpu", duration_cpu, "ns");
 
-	print_res("speedup", std::to_string((double(duration_cpu)/duration_cuda))+"x");
+//	print_res("speedup", std::to_string((double(duration_cpu)/duration_cuda))+"x");
 
-	assert(abs(res_cpu-res_cuda) < 1e-10);
-
+	std::cout<<"res_cuda="<<res_cuda<<'\n';
 }

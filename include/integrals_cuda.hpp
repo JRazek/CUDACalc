@@ -36,16 +36,14 @@ template<
 	RealFunction Function
 >
 __global__
-auto riemann_integral_kernel(Function const& function, std::size_t* deltas, T* data_ptr) -> void{
+auto riemann_integral_kernel(Function const& function, const std::size_t* accumulated_products_global, const T* deltas, T* data_ptr) -> void{
 	auto const id=threadIdx.x + blockIdx.x*blockDim.x;
 
 	__shared__
 	std::array<std::size_t, Nm> accumulated_products;
 
 	if(threadIdx.x == 0){
-		copy(deltas, accumulated_products.begin(), Nm);
-		for(auto i=1u;i<Nm;i++)
-			accumulated_products[i] *= accumulated_products[i-1];
+		copy(accumulated_products_global, accumulated_products.begin(), Nm);
 	}
 
 	__syncthreads();
@@ -90,16 +88,17 @@ auto riemann_integral(
 
 
 	thrust::device_vector<T> result_dev_vector(total_count);
-	thrust::device_vector<T> accumulated_products_dev(accumulated_products.begin(), accumulated_products.end());
+	thrust::device_vector<std::size_t> accumulated_products_dev(accumulated_products.begin(), accumulated_products.end());
 
-	thrust::device_vector<std::size_t> deltas_dev(deltas.begin(), deltas.end());
+	thrust::device_vector<T> deltas_dev(deltas.begin(), deltas.end());
 
-
-	riemann_integral_kernel<T, Nm><<<total_count/kBlockSize+1, kBlockSize>>>(function, thrust::raw_pointer_cast(deltas_dev.data()), thrust::raw_pointer_cast(result_dev_vector.data()));
+	riemann_integral_kernel<T, Nm><<<total_count/kBlockSize+1, kBlockSize>>>(function, thrust::raw_pointer_cast(accumulated_products_dev.data()), thrust::raw_pointer_cast(deltas_dev.data()), thrust::raw_pointer_cast(result_dev_vector.data()));
 
 	cudaDeviceSynchronize();
 
-	return thrust::reduce(result_dev_vector.begin(), result_dev_vector.end(), T(0), thrust::plus<T>());
+	return 
+		thrust::reduce(result_dev_vector.begin(), result_dev_vector.end(), T(0), thrust::plus<T>()) *
+		thrust::reduce(deltas_dev.begin(), deltas_dev.end(), T(1), thrust::multiplies<T>());
 }
 
 }

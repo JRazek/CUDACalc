@@ -13,12 +13,10 @@ incdir = include_directories(
 
 cpp_build_args=[
   '-stdlib=libc++', 
-  '--cuda-gpu-arch=sm_70', 
   '-xcuda',
 ]
 cpp_link_args=[
   '-stdlib=libc++',
-  '--cuda-gpu-arch=sm_70', 
 ]
 
 
@@ -31,7 +29,10 @@ cpp_build_args += ['-O3', '-Wall', '-DNDEBUG', '-g0']
 #endif
 
 
-thrust_dep = dependency('thrust')
+thrust_dep = dependency('thrust', required: true)
+
+gtest_dep = dependency('gtest', required: true)
+
 
 cuda_lib=cpp.find_library('cudart_static', dirs: '/usr/local/cuda/lib64', required: true)
 
@@ -48,4 +49,4 @@ cuda_calc = declare_dependency(include_directories: incdir, link_with : cuda_cal
 
 
 subdir('example')
-
+subdir('tests')
