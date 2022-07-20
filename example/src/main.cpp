@@ -12,6 +12,8 @@
 #include <thread>
 #include <chrono>
 #include <iomanip>
+#include <future>
+
 
 
 auto print_res(std::string const& worker, auto const duration) -> void{
@@ -29,7 +31,7 @@ auto main() -> int {
 	std::array deltas{.001, .001};
 
 
-	auto cuda_thread = std::thread([function1, ranges, deltas]{
+	auto cuda_thread = std::async(std::launch::async, [function1, ranges, deltas]{
 		auto start = std::chrono::steady_clock::now();
 
 		auto res_cuda=jr::calc::riemann_integral<jr::calc::CalculationMode::cuda>(function1, ranges, deltas);
@@ -38,10 +40,10 @@ auto main() -> int {
 
 		auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
 
-		print_res("cuda", duration);
+		return duration;
 	});
 
-	auto cpu_thread = std::thread([function1, ranges, deltas]{
+	auto cpu_thread = std::async(std::launch::async, [function1, ranges, deltas]{
 		auto start = std::chrono::steady_clock::now();
 
 		auto res_cpu=jr::calc::riemann_integral(function1, ranges, deltas);
@@ -50,10 +52,22 @@ auto main() -> int {
 
 		auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
 
-		print_res("cpu", duration);
+		return duration;
 	});
 
-	cuda_thread.join();
+	cuda_thread.wait();
 
-	cpu_thread.join();
+	cpu_thread.wait();
+
+
+	auto duration_cuda=cuda_thread.get();
+
+	auto duration_cpu=cpu_thread.get();
+
+	print_res("cuda", duration_cuda);
+
+	print_res("cpu", duration_cpu);
+
+	print_res("ratio", (double(duration_cpu)/duration_cuda));
+
 }
