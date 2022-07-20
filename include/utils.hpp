@@ -9,6 +9,7 @@
 #include <ranges>
 #include <iterator>
 #include <cuda_runtime_api.h>
+#include <numeric>
 
 
 namespace jr::calc{
@@ -30,7 +31,8 @@ template <
 requires std::invocable<Runnable, std::array<std::size_t, Nm>, Args...>
 auto nested_for_loop(std::array<std::size_t, Nm> const& dims, Runnable const& runnable, Args&&... args) -> void {
 	auto accumulated_products=dims;
-	for(auto i=1u;i<Nm;i++) accumulated_products[i]*=accumulated_products[i-1];
+
+	std::partial_sum(accumulated_products.begin(), accumulated_products.end(), accumulated_products.begin(), std::multiplies<std::size_t>());
 
 	auto n=accumulated_products.back();
 

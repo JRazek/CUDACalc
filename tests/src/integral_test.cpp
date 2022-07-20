@@ -16,38 +16,95 @@
 #include <iomanip>
 #include <future>
 #include <random>
-
+#include <concepts>
 
 auto print_res(std::string const& worker, auto const duration, std::string const& duration_type="") -> void{
 	std::cout<<worker<<":"<<std::setw(20-worker.size())<<duration<<duration_type<<'\n';
 }
 
+template<std::size_t N>
+struct TestPack{
+	std::array<double, N> deltas;
+	std::array<std::pair<double, double>, N> ranges;
+};
 
-TEST(IntegralCudaTest, ConstantFunction) {
-	constexpr auto function1=[](std::array<double, 2> const& x) -> double { 
+struct IntegralCudaTest2D : public testing::Test{
+
+	constexpr static auto N = 2u;
+
+	std::array<TestPack<N>, 10> test_packs;
+
+	IntegralCudaTest2D(){
+		std::uniform_real_distribution<double> unif(0, 4);
+
+		std::random_device rd;
+		
+		for(auto& test_pack : test_packs){
+			auto& ranges=test_pack.ranges;
+			auto& deltas=test_pack.deltas;
+
+			for(auto j=0u;j<N;j++)
+				ranges[j] = std::pair(unif(rd), unif(rd));
+			
+			for(auto& [low, high] : ranges){
+				if(low>high)
+					std::swap(low, high);
+			}
+
+			for(auto& d : deltas){
+				d = 0.01;
+			}
+		}
+	}
+};
+
+template<
+	jr::calc::CalculationMode mode = jr::calc::CalculationMode::cpu,
+	typename Function,
+	typename Integral,
+	std::size_t N
+>
+auto run_test(Function const& function, Integral const& analytic_integral, TestPack<N> const& test_pack) -> void {
+	auto& ranges=test_pack.ranges;
+	auto& deltas=test_pack.deltas;
+
+	auto res_cuda=jr::calc::riemann_integral<mode>(function, ranges, deltas);
+
+	auto real_result=analytic_integral(ranges);
+	EXPECT_NEAR(real_result, res_cuda, 0.1);
+}
+
+TEST_F(IntegralCudaTest2D, SinCosProd) {
+	constexpr auto function=[](std::array<double, 2> const& x) -> double { 
 		return 1;
 	};
 
 	constexpr auto analytic_integral = [](std::array<std::pair<double, double>, 2> const& ranges) -> double { 
-		return (ranges[0].second-ranges[0].first)*(ranges[1].second-ranges[1].first);
+		return (ranges[0].second - ranges[0].first) * (ranges[1].second - ranges[1].first);
 	};
 
-	std::uniform_real_distribution<double> unif(-10, 10);
-	std::default_random_engine re;
-	
-	for(auto i=0;i<10;i++){
-		std::array ranges{std::pair(unif(re), unif(re)), std::pair(unif(re), unif(re))};
-		std::array deltas{unif(re), unif(re)};
+	for(auto const& test_pack : test_packs){
+		run_test(function, analytic_integral, test_pack);
+	}
+}
 
-		auto res_cuda=jr::calc::riemann_integral<jr::calc::CalculationMode::cuda>(function1, ranges, deltas);
-		auto real_result=analytic_integral(ranges);
-		ASSERT_FLOAT_EQ(real_result, res_cuda);
+TEST_F(IntegralCudaTest2D, ConstantFunction) {
+	constexpr auto function=[](std::array<double, 2> const& x) -> double { 
+		return 1;
+	};
+
+	constexpr auto analytic_integral = [](std::array<std::pair<double, double>, 2> const& ranges) -> double { 
+		return (ranges[0].second - ranges[0].first) * (ranges[1].second - ranges[1].first);
+	};
+
+	for(auto const& test_pack : test_packs){
+		run_test(function, analytic_integral, test_pack);
 	}
 }
 
 
 
 auto main() -> int { 
-	testing::InitGoogleTest();
+	::testing::InitGoogleTest();
 	return RUN_ALL_TESTS();
 }

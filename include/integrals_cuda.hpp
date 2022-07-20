@@ -36,7 +36,13 @@ template<
 	RealFunction Function
 >
 __global__
-auto riemann_integral_kernel(Function const& function, const std::size_t* accumulated_products_global, const T* deltas, T* data_ptr) -> void{
+auto riemann_integral_kernel(
+		Function const& function, 
+		const std::pair<T, T>* ranges, 
+		const std::size_t* accumulated_products_global, 
+		const T* deltas, 
+		T* result_ptr
+) -> void{
 	auto const id=threadIdx.x + blockIdx.x*blockDim.x;
 
 	__shared__
@@ -54,11 +60,11 @@ auto riemann_integral_kernel(Function const& function, const std::size_t* accumu
 		std::array<T, Nm> point;
 
 		for(auto i=0u;i<Nm;i++)
-			point[i] = index_pack[i] * deltas[i];
+			point[i] = index_pack[i] * deltas[i] + ranges[i].first;
 
 		auto res=function(point);
 
-		data_ptr[id] = res;
+		result_ptr[id] = res;
 	}
 }
 
@@ -81,18 +87,23 @@ auto riemann_integral(
 	for(auto i=0u;i<ranges.size();i++)
 		accumulated_products[i] = std::ceil((double(ranges[i].second-ranges[i].first))/deltas[i]);
 
-	for(auto i=1u;i<ranges.size();i++)
-		accumulated_products[i] *= accumulated_products[i-1];
+	std::partial_sum(accumulated_products.begin(), accumulated_products.end(), accumulated_products.begin(), std::multiplies<std::size_t>());
 
 	auto total_count=accumulated_products.back();
 
 
 	thrust::device_vector<T> result_dev_vector(total_count);
 	thrust::device_vector<std::size_t> accumulated_products_dev(accumulated_products.begin(), accumulated_products.end());
-
+	thrust::device_vector<std::pair<T, T>> ranges_dev(ranges.begin(), ranges.end());
 	thrust::device_vector<T> deltas_dev(deltas.begin(), deltas.end());
 
-	riemann_integral_kernel<T, Nm><<<total_count/kBlockSize+1, kBlockSize>>>(function, thrust::raw_pointer_cast(accumulated_products_dev.data()), thrust::raw_pointer_cast(deltas_dev.data()), thrust::raw_pointer_cast(result_dev_vector.data()));
+	riemann_integral_kernel<T, Nm><<<total_count/kBlockSize+1, kBlockSize>>>(
+		function, 
+		thrust::raw_pointer_cast(ranges_dev.data()), 
+		thrust::raw_pointer_cast(accumulated_products_dev.data()), 
+		thrust::raw_pointer_cast(deltas_dev.data()), 
+		thrust::raw_pointer_cast(result_dev_vector.data())
+	);
 
 	cudaDeviceSynchronize();
 

@@ -1,3 +1,4 @@
+
 integral_test=executable(
     'integral_test',
     'src/integral_test.cpp',

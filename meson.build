@@ -20,13 +20,11 @@ cpp_link_args=[
 ]
 
 
-cpp_build_args += ['-O3', '-Wall', '-DNDEBUG', '-g0']
-#if get_option('build')=='release'
-#    cpp_build_args += ['-O3', '-Wall', '-DNDEBUG', '-g0', '-s']
-#else
-#	cpp_build_args += ['-g3','-fsanitize=undefined,float-cast-overflow,float-divide-by-zero,bounds-strict,address,', '-Wall']
-#	cpp_link_args += cpp_build_args 
-#endif
+if get_option('build')=='release'
+    cpp_build_args += ['-O3', '-Wall', '-DNDEBUG', '-g0']
+else
+	cpp_build_args += ['-g3', '-Wall', '-O0']
+endif
 
 
 thrust_dep = dependency('thrust', required: true)
@@ -38,6 +36,7 @@ cuda_lib=cpp.find_library('cudart_static', dirs: '/usr/local/cuda/lib64', requir
 
 cuda_calc_library = static_library(
     'cuda_calc',
+    'include/concepts.hpp',
     include_directories : incdir,
     cpp_args: cpp_build_args,
 	link_args: cpp_link_args,

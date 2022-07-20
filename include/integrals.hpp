@@ -35,6 +35,8 @@ using ParamSizedArray = std::array<T, params_counter::ArraySizeFromCallable<Func
 * @param deltas - deltas for integration
 *
 * @note ranges of integration are in relative order to deltas.
+* range must be a valid range where the first param is lower or equal to the second one.
+* Otherwise behaviour of the program is undefined.
 *
 * @return 
 */
@@ -51,8 +53,6 @@ auto riemann_integral(
 		std::array<std::pair<T, T>, Nm> const& ranges,
 		std::array<T, Nm> const& deltas
 ) -> T {
-	auto result=T();
-
 	using SizesArray=std::array<std::size_t, Nm>;
 
 	SizesArray dims;
@@ -60,13 +60,15 @@ auto riemann_integral(
 	for(auto i=std::size_t();i<ranges.size();i++)
 		dims[i] = std::ceil((double(ranges[i].second-ranges[i].first))/deltas[i]);
 
+	auto result=T();
+
 	nested_for_loop(
 		dims,
-		[&result, &function, &deltas](SizesArray const& index_pack){
+		[&result, &function, &deltas, &ranges](SizesArray const& index_pack){
 			std::array<T, Nm> point;
 
 			for(auto i=0u;i<Nm;i++)
-				point[i] = index_pack[i] * deltas[i];
+				point[i] = index_pack[i] * deltas[i] + ranges[i].first;
 
 			result += function(point);
 		}
@@ -87,6 +89,8 @@ auto riemann_integral(
 * @param deltas - deltas for integration
 *
 * @note ranges of integration are in relative order to deltas.
+* range must be a valid range where the first param is lower or equal to the second one.
+* Otherwise behaviour of the program is undefined.
 *
 * @return 
 */
