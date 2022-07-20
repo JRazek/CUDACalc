@@ -121,16 +121,18 @@ auto riemann_integral(
 * @return 
 */
 template<
+	CalculationMode mode = jr::calc::CalculationMode::cpu,
 	Arithmetic T,
 	RealFunction Function,
 	std::size_t Nm
 >
+requires ( mode == jr::calc::CalculationMode::cpu )
 auto calculate_gradient(
 		Function function, 
 		std::array<T, Nm> const& point,
 		std::array<T, Nm> const& deltas
 ) -> T {
-	assert(false);
+	
 }
 
 

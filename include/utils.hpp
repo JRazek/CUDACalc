@@ -53,12 +53,11 @@ enum class CalculationMode{
 namespace cuda{
 
 template<
-	typename Input,
-	typename Output
+	typename T
 >
 __device__
-auto copy(Input const& input, Output output, std::size_t size) -> void{
-	memcpy(output, input, size);
+auto copy(const T* input, T* output, std::size_t size) -> void{
+	memcpy(static_cast<void*>(output), static_cast<const void*>(input), size*sizeof(T));
 }
 
 }

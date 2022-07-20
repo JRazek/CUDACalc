@@ -16,8 +16,8 @@
 
 
 
-auto print_res(std::string const& worker, auto const duration) -> void{
-	std::cout<<worker<<":"<<std::setw(20-worker.size())<<duration<<'\n';
+auto print_res(std::string const& worker, auto const duration, std::string const& duration_type="") -> void{
+	std::cout<<worker<<":"<<std::setw(20-worker.size())<<duration<<duration_type<<'\n';
 }
 
 auto main() -> int { 
@@ -40,7 +40,7 @@ auto main() -> int {
 
 		auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
 
-		return duration;
+		return std::pair(res_cuda, duration);
 	});
 
 	auto cpu_thread = std::async(std::launch::async, [function1, ranges, deltas]{
@@ -52,7 +52,7 @@ auto main() -> int {
 
 		auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
 
-		return duration;
+		return std::pair(res_cpu, duration);
 	});
 
 	cuda_thread.wait();
@@ -60,14 +60,16 @@ auto main() -> int {
 	cpu_thread.wait();
 
 
-	auto duration_cuda=cuda_thread.get();
+	auto [res_cuda, duration_cuda]=cuda_thread.get();
 
-	auto duration_cpu=cpu_thread.get();
+	auto [res_cpu, duration_cpu]=cpu_thread.get();
 
-	print_res("cuda", duration_cuda);
+	print_res("cuda", duration_cuda, "ns");
 
-	print_res("cpu", duration_cpu);
+	print_res("cpu", duration_cpu, "ns");
 
-	print_res("ratio", (double(duration_cpu)/duration_cuda));
+	print_res("speedup", std::to_string((double(duration_cpu)/duration_cuda))+"x");
+
+	assert(abs(res_cpu-res_cuda) < 1e-10);
 
 }
