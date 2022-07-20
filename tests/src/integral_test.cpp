@@ -86,9 +86,6 @@ TEST_F(IntegralCudaTest2D, SinCosProd) {
 		return (ranges[0].second - ranges[0].first) * (ranges[1].second - ranges[1].first);
 	};
 
-	for(auto const& test_pack : test_packs){
-		run_test(function, analytic_integral, test_pack);
-	}
 }
 
 TEST_F(IntegralCudaTest2D, ConstantFunction) {
