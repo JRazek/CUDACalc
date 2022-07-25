@@ -68,6 +68,7 @@ auto riemann_integral_kernel(
 	}
 }
 
+//TODO take sign into account!
 template<
 	Arithmetic T,
 	std::size_t kBlockSize = 64,

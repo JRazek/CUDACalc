@@ -17,6 +17,8 @@
 #include <future>
 #include <random>
 #include <concepts>
+#include <complex>
+
 
 auto print_res(std::string const& worker, auto const duration, std::string const& duration_type="") -> void{
 	std::cout<<worker<<":"<<std::setw(20-worker.size())<<duration<<duration_type<<'\n';
@@ -45,11 +47,6 @@ struct IntegralCudaTest2D : public testing::Test{
 
 			for(auto j=0u;j<N;j++)
 				ranges[j] = std::pair(unif(rd), unif(rd));
-			
-			for(auto& [low, high] : ranges){
-				if(low>high)
-					std::swap(low, high);
-			}
 
 			for(auto& d : deltas){
 				d = 0.01;
@@ -78,16 +75,34 @@ auto run_test(Function const& function, Integral const& analytic_integral, TestP
 
 //TODO
 TEST_F(IntegralCudaTest2D, SinCosProd) { 
-	constexpr auto function=[](std::array<double, 2> const& x) -> double { 
-		return std::sin(x[0]) + std::cos(x[1]);
-	};
-
-	constexpr auto analytic_integral = [](std::array<std::pair<double, double>, 2> const& ranges) -> double { 
-		return (ranges[0].second - ranges[0].first) * (ranges[1].second - ranges[1].first);
-	};
+//	constexpr auto function=[](std::array<double, 2> const& x) -> double { 
+//		return std::sin(x[0]) + std::cos(x[1]);
+//	};
+//
+//	constexpr auto analytic_integral = [](std::array<std::pair<double, double>, 2> const& ranges) -> double { 
+//		return (ranges[0].second - ranges[0].first) * (ranges[1].second - ranges[1].first);
+//	};
 
 }
 
+TEST_F(IntegralCudaTest2D, LinearReversedRange) { 
+	constexpr auto function=[](std::array<double, 1> const& x) -> double { 
+		return x[0];
+	};
+
+	constexpr auto analytic_integral = [](std::array<std::pair<double, double>, 1> const& ranges) -> double { 
+		auto inverse = [](double x){ return 0.5 * x * x; };
+		return inverse(ranges[0].second) - inverse(ranges[0].first);
+	};
+
+	std::array ranges{std::pair(10., 2.)};
+	std::array deltas{0.01};
+
+	auto res_cuda=jr::calc::riemann_integral<jr::calc::CalculationMode::cpu>(function, ranges, deltas);
+	auto real_result=analytic_integral(ranges);
+	EXPECT_NEAR(real_result, res_cuda, 0.2);
+
+}
 TEST_F(IntegralCudaTest2D, ConstantFunction) {
 	constexpr auto function=[](std::array<double, 2> const& x) -> double { 
 		return 1;
@@ -102,6 +117,16 @@ TEST_F(IntegralCudaTest2D, ConstantFunction) {
 	}
 }
 
+TEST_F(IntegralCudaTest2D, ComplexFunction) {
+//	constexpr auto function=[](std::array<std::complex<double>, 1> const& x) -> std::complex<double> { 
+//		return x[0];
+//	};
+//
+//	std::array arr{ std::pair(std::complex{1., 0.}, std::complex{1., 0.}) };
+
+//	jr::calc::riemann_integral(function, arr, std::complex{1, 0});
+
+}
 
 
 auto main() -> int { 

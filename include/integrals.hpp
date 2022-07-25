@@ -50,27 +50,43 @@ requires
 (mode == CalculationMode::cpu && params_counter::ArraySizeFromCallable<Function> == Nm)
 auto riemann_integral(
 		Function function, 
-		std::array<std::pair<T, T>, Nm> const& ranges,
-		std::array<T, Nm> const& deltas
+		std::array<std::pair<T, T>, Nm> ranges,
+		std::array<T, Nm> deltas
 ) -> T {
 	using SizesArray=std::array<std::size_t, Nm>;
 
 	SizesArray dims;
+	bool sign = false;
 
-	for(auto i=std::size_t();i<ranges.size();i++)
-		dims[i] = std::ceil((double(ranges[i].second-ranges[i].first))/deltas[i]);
+	for(auto i=std::size_t();i<ranges.size();i++){
+		if(ranges[i].first > ranges[i].second){ 
+			std::swap(ranges[i].first, ranges[i].second); 
+			sign = !sign;
+		}
+
+		if constexpr(std::is_unsigned_v<T>){
+			if(deltas[i] < 0){
+				sign = !sign;
+				deltas[i] *= -1;
+			}
+		}
+
+		auto range_size = ranges[i].second - ranges[i].first;
+
+		dims[i] = std::ceil(range_size/deltas[i]);
+	}
 
 	auto result=T();
 
 	nested_for_loop(
 		dims,
-		[&result, &function, &deltas, &ranges](SizesArray const& index_pack){
+		[&result, &function, &deltas, &ranges, sign = (sign ? -1 : 1)](SizesArray const& index_pack){
 			std::array<T, Nm> point;
 
 			for(auto i=0u;i<Nm;i++)
 				point[i] = index_pack[i] * deltas[i] + ranges[i].first;
 
-			result += function(point);
+			result += function(point) * sign;
 		}
 	);
 

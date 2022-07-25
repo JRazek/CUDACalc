@@ -25,11 +25,10 @@ namespace jr::calc{
 */
 template <
 	std::size_t Nm,
-	typename Runnable,
-	typename... Args
+	typename Runnable
 >
-requires std::invocable<Runnable, std::array<std::size_t, Nm>, Args...>
-auto nested_for_loop(std::array<std::size_t, Nm> const& dims, Runnable const& runnable, Args&&... args) -> void {
+requires std::invocable<Runnable, std::array<std::size_t, Nm>>
+auto nested_for_loop(std::array<std::size_t, Nm> const& dims, Runnable const& runnable) -> void {
 	auto accumulated_products=dims;
 
 	std::partial_sum(accumulated_products.begin(), accumulated_products.end(), accumulated_products.begin(), std::multiplies<std::size_t>());
@@ -42,7 +41,7 @@ auto nested_for_loop(std::array<std::size_t, Nm> const& dims, Runnable const& ru
 		for(auto d=1u;d<Nm;d++)
 			index_pack[d] = i % accumulated_products[d] / accumulated_products[d-1];
 
-		runnable(index_pack, std::forward<Args>(args)...);
+		runnable(index_pack);
 	}
 }
 
