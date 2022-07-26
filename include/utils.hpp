@@ -63,5 +63,29 @@ auto copy(const T* input, T* output, std::size_t size) -> void{
 
 }
 
+namespace detailed{
+
+template<typename T, std::size_t N>
+inline auto prepare_dims(
+		std::array<std::pair<T, T>, N>& ranges,
+		std::array<T, N> const& deltas,
+		std::array<std::size_t, N>& dims,
+		bool& sign
+		) -> void {
+	sign = false;
+
+	for(auto i=std::size_t();i<ranges.size();i++){
+		if(ranges[i].first > ranges[i].second){ 
+			std::swap(ranges[i].first, ranges[i].second); 
+			sign = !sign;
+		}
+
+		auto range_size = ranges[i].second - ranges[i].first;
+
+		dims[i] = std::ceil(range_size/deltas[i]);
+	}
+}
+
+}
 
 }

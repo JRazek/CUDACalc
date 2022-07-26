@@ -12,8 +12,10 @@
 #include <iostream>
 #include <numeric>
 #include <cassert>
+#include <ranges>
 
 #include "integrals_cuda.hpp"
+
 
 
 namespace jr::calc{
@@ -22,6 +24,12 @@ namespace detailed{
 
 template<typename T, typename Function>
 using ParamSizedArray = std::array<T, params_counter::ArraySizeFromCallable<Function>>;
+
+auto inline positive_range(std::ranges::range auto const& range) -> bool {
+	for(auto const& e : range)
+		if(e < 0) return false;
+	return true;
+}
 
 }
 
@@ -49,48 +57,34 @@ template<
 requires 
 (mode == CalculationMode::cpu && params_counter::ArraySizeFromCallable<Function> == Nm)
 auto riemann_integral(
-		Function function, 
+		Function const& function, 
 		std::array<std::pair<T, T>, Nm> ranges,
-		std::array<T, Nm> deltas
+		std::array<T, Nm> const& deltas
 ) -> T {
+	assert(detailed::positive_range(deltas));
+
 	using SizesArray=std::array<std::size_t, Nm>;
 
 	SizesArray dims;
-	bool sign = false;
+	bool sign;
 
-	for(auto i=std::size_t();i<ranges.size();i++){
-		if(ranges[i].first > ranges[i].second){ 
-			std::swap(ranges[i].first, ranges[i].second); 
-			sign = !sign;
-		}
-
-		if constexpr(std::is_unsigned_v<T>){
-			if(deltas[i] < 0){
-				sign = !sign;
-				deltas[i] *= -1;
-			}
-		}
-
-		auto range_size = ranges[i].second - ranges[i].first;
-
-		dims[i] = std::ceil(range_size/deltas[i]);
-	}
+	detailed::prepare_dims(ranges, deltas, dims, sign);
 
 	auto result=T();
 
 	nested_for_loop(
 		dims,
-		[&result, &function, &deltas, &ranges, sign = (sign ? -1 : 1)](SizesArray const& index_pack){
+		[&result, &function, &deltas, &ranges](SizesArray const& index_pack){
 			std::array<T, Nm> point;
 
 			for(auto i=0u;i<Nm;i++)
 				point[i] = index_pack[i] * deltas[i] + ranges[i].first;
 
-			result += function(point) * sign;
+			result += function(point);
 		}
 	);
 
-	result *= std::accumulate(deltas.begin(), deltas.end(), T(1), std::multiplies<T>());
+	result *= std::accumulate(deltas.begin(), deltas.end(), T(sign ? -1 : 1), std::multiplies<T>());
 
 	return result;
 }
@@ -102,11 +96,9 @@ auto riemann_integral(
 * @tparam T - return type of integral
 * @param function - function to integrate
 * @param ranges - ranges of integration
-* @param deltas - deltas for integration
+* @param deltas - deltas for integration (only positive values accepted)
 *
 * @note ranges of integration are in relative order to deltas.
-* range must be a valid range where the first param is lower or equal to the second one.
-* Otherwise behaviour of the program is undefined.
 *
 * @return 
 */
@@ -121,9 +113,10 @@ requires
 (mode == CalculationMode::cuda)
 auto riemann_integral(
 		Function function, 
-		std::array<std::pair<T, T>, Nm> const& ranges,
+		std::array<std::pair<T, T>, Nm> ranges,
 		std::array<T, Nm> const& deltas
 ) -> T {
+	assert(detailed::positive_range(deltas));
 	return jr::calc::cuda::riemann_integral(function, ranges, deltas);
 }
 
@@ -152,7 +145,7 @@ auto calculate_gradient(
 		std::array<T, Nm> const& point,
 		std::array<T, Nm> const& deltas
 ) -> T {
-	
+	return {};
 }
 
 

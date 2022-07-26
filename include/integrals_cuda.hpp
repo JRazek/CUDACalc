@@ -7,6 +7,7 @@
 #include <thrust/device_vector.h>
 #include <numeric>
 #include <concepts.hpp>
+#include "utils.hpp"
 
 namespace jr::calc::cuda{
 
@@ -14,13 +15,14 @@ template<
 	std::size_t Nm
 >
 __device__
-auto get_index_pack(std::array<std::size_t, Nm> const& accumulated_products, std::size_t const index) -> std::array<std::size_t, Nm> {
-	std::array<std::size_t, Nm> index_pack{index % accumulated_products[0]};
+auto get_index_pack(
+		std::array<std::size_t, Nm> const& accumulated_products, 
+		std::size_t const index,
+		std::array<std::size_t, Nm>& index_pack) -> void {
+	index_pack[0] = index % accumulated_products[0];
 
 	for(auto d=1u;d<Nm;d++)
 		index_pack[d] = index % accumulated_products[d] / accumulated_products[d-1];
-
-	return index_pack;
 }
 
 __host__ __device__
@@ -55,7 +57,8 @@ auto riemann_integral_kernel(
 	__syncthreads();
 
 	if(id<accumulated_products.back()){
-		auto index_pack = get_index_pack(accumulated_products, id);
+		std::array<std::size_t, Nm> index_pack;
+		get_index_pack(accumulated_products, id, index_pack);
 
 		std::array<T, Nm> point;
 
@@ -68,7 +71,6 @@ auto riemann_integral_kernel(
 	}
 }
 
-//TODO take sign into account!
 template<
 	Arithmetic T,
 	std::size_t kBlockSize = 64,
@@ -77,21 +79,21 @@ template<
 >
 auto riemann_integral(
 		Function const& function, 
-		std::array<std::pair<T, T>, Nm> const& ranges,
+		std::array<std::pair<T, T>, Nm>& ranges,
 		std::array<T, Nm> const& deltas
 ) -> T {
 
 	using SizesArray=std::array<std::size_t, Nm>;
 
+	SizesArray dims;
+	bool sign;
+
+	::jr::calc::detailed::prepare_dims(ranges, deltas, dims, sign);
+
 	SizesArray accumulated_products;
-
-	for(auto i=0u;i<ranges.size();i++)
-		accumulated_products[i] = std::ceil((double(ranges[i].second-ranges[i].first))/deltas[i]);
-
-	std::partial_sum(accumulated_products.begin(), accumulated_products.end(), accumulated_products.begin(), std::multiplies<std::size_t>());
+	std::partial_sum(dims.begin(), dims.end(), accumulated_products.begin(), std::multiplies<std::size_t>());
 
 	auto total_count=accumulated_products.back();
-
 
 	thrust::device_vector<T> result_dev_vector(total_count);
 	thrust::device_vector<std::size_t> accumulated_products_dev(accumulated_products.begin(), accumulated_products.end());
@@ -110,7 +112,7 @@ auto riemann_integral(
 
 	return 
 		thrust::reduce(result_dev_vector.begin(), result_dev_vector.end(), T(0), thrust::plus<T>()) *
-		thrust::reduce(deltas_dev.begin(), deltas_dev.end(), T(1), thrust::multiplies<T>());
+		thrust::reduce(deltas_dev.begin(), deltas_dev.end(), T(sign ? -1 : 1), thrust::multiplies<T>());
 }
 
 }
