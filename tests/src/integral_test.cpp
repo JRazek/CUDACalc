@@ -30,29 +30,31 @@ struct TestPack{
 	std::array<std::pair<double, double>, N> ranges;
 };
 
-struct IntegralCudaTest2D : public testing::Test{
+template<std::size_t N>
+auto generate_test_pack(std::size_t test_count, bool reversed_bounds = false) -> std::vector<TestPack<N>> {
+	std::vector<TestPack<N>> test_packs(test_count);
 
-	constexpr static auto N = 2u;
+	std::uniform_real_distribution<double> unif(0, 4);
 
-	std::array<TestPack<N>, 10> test_packs;
+	std::random_device rd;
+	
+	for(auto& test_pack : test_packs){
+		auto& ranges=test_pack.ranges;
+		auto& deltas=test_pack.deltas;
 
-	IntegralCudaTest2D(){
-		std::uniform_real_distribution<double> unif(0, 4);
+		for(auto j=0u;j<N;j++){
+			ranges[j] = std::pair(unif(rd), unif(rd));
+			if(reversed_bounds && ranges[j].first > ranges[j].second) 
+				std::swap(ranges[j].first, ranges[j].second);
+			else if(!reversed_bounds && ranges[j].first < ranges[j].second) 
+				std::swap(ranges[j].first, ranges[j].second);
+		}
 
-		std::random_device rd;
-		
-		for(auto& test_pack : test_packs){
-			auto& ranges=test_pack.ranges;
-			auto& deltas=test_pack.deltas;
-
-			for(auto j=0u;j<N;j++)
-				ranges[j] = std::pair(unif(rd), unif(rd));
-
-			for(auto& d : deltas){
-				d = 0.01;
-			}
+		for(auto& d : deltas){
+			d = 0.01;
 		}
 	}
+	return test_packs;
 };
 
 template<
@@ -74,7 +76,7 @@ auto run_test(Function const& function, Integral const& analytic_integral, TestP
 
 
 //TODO
-TEST_F(IntegralCudaTest2D, SinCosProd) { 
+TEST(IntegralCudaTest2D, SinCosProd) { 
 //	constexpr auto function=[](std::array<double, 2> const& x) -> double { 
 //		return std::sin(x[0]) + std::cos(x[1]);
 //	};
@@ -85,7 +87,7 @@ TEST_F(IntegralCudaTest2D, SinCosProd) {
 
 }
 
-TEST_F(IntegralCudaTest2D, LinearReversedRange) { 
+TEST(IntegralCudaTest2D, LinearReversedRange) { 
 	constexpr auto function=[](std::array<double, 1> const& x) -> double { 
 		return x[0];
 	};
@@ -95,15 +97,13 @@ TEST_F(IntegralCudaTest2D, LinearReversedRange) {
 		return inverse(ranges[0].second) - inverse(ranges[0].first);
 	};
 
-	std::array ranges{std::pair(10., 2.)};
-	std::array deltas{0.01};
+	auto test_packs = generate_test_pack<1>(10, true);
 
-	auto res_cuda=jr::calc::riemann_integral<jr::calc::CalculationMode::cpu>(function, ranges, deltas);
-	auto real_result=analytic_integral(ranges);
-	EXPECT_NEAR(real_result, res_cuda, 0.2);
-
+	for(auto const& test_pack : test_packs){
+		run_test<jr::calc::CalculationMode::cuda>(function, analytic_integral, test_pack);
+	}
 }
-TEST_F(IntegralCudaTest2D, ConstantFunction) {
+TEST(IntegralCudaTest2D, ConstantFunction) {
 	constexpr auto function=[](std::array<double, 2> const& x) -> double { 
 		return 1;
 	};
@@ -112,12 +112,14 @@ TEST_F(IntegralCudaTest2D, ConstantFunction) {
 		return (ranges[0].second - ranges[0].first) * (ranges[1].second - ranges[1].first);
 	};
 
+	auto test_packs = generate_test_pack<2>(10);
+
 	for(auto const& test_pack : test_packs){
-		run_test(function, analytic_integral, test_pack);
+		run_test<jr::calc::CalculationMode::cuda>(function, analytic_integral, test_pack);
 	}
 }
 
-TEST_F(IntegralCudaTest2D, ComplexFunction) {
+TEST(IntegralCudaTest2D, ComplexFunction) {
 //	constexpr auto function=[](std::array<std::complex<double>, 1> const& x) -> std::complex<double> { 
 //		return x[0];
 //	};
@@ -125,7 +127,6 @@ TEST_F(IntegralCudaTest2D, ComplexFunction) {
 //	std::array arr{ std::pair(std::complex{1., 0.}, std::complex{1., 0.}) };
 
 //	jr::calc::riemann_integral(function, arr, std::complex{1, 0});
-
 }
 
 
