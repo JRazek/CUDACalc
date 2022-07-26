@@ -22,8 +22,12 @@ In order to compile first specify clang++ and clang as your compilers for meson.
 export CC='clang'
 export CXX='clang++'
 ```
+Optionally you can add these lines to your `~/.bashrc` file with:
+```bash
+echo -e "export CC=clang\nexport CXX=clang++" >> ~/.bashrc
+```
 
-Then by running 
+Then compile by running 
 ```bash
 meson build 
 meson compile -C build
