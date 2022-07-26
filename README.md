@@ -9,10 +9,10 @@ Early stage of library for real/complex numeric analysis.
 - [ ] Monte Carlo integral [cuda]
 - [ ] Gradient [cpu]
 - [ ] Gradient [cuda]
-- [ ] Forier Series [cpu] - in progess...
-- [ ] Forier Series [cuda]
-- [ ] Forier Transform (FFT) [cpu]
-- [ ] Forier Transform (FFT) [cuda]
+- [ ] Fourier Series [cpu] - in progess...
+- [ ] Fourier Series [cuda]
+- [ ] Fourier Transform (FFT) [cpu]
+- [ ] Fourier Transform (FFT) [cuda]
 
 ## Compilation
 CUDA version 11.5 is required.
