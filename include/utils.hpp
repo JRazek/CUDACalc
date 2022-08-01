@@ -14,6 +14,12 @@
 
 namespace jr::calc{
 
+template<
+	typename T,
+	std::size_t N
+>
+using math_vec = std::array<T, N>;
+
 /**
 * @brief - provides interface for nested for loops
 *
@@ -27,8 +33,8 @@ template <
 	std::size_t Nm,
 	typename Runnable
 >
-requires std::invocable<Runnable, std::array<std::size_t, Nm>>
-auto nested_for_loop(std::array<std::size_t, Nm> const& dims, Runnable const& runnable) -> void {
+requires std::invocable<Runnable, math_vec<std::size_t, Nm>>
+auto nested_for_loop(math_vec<std::size_t, Nm> const& dims, Runnable const& runnable) -> void {
 	auto accumulated_products=dims;
 
 	std::partial_sum(accumulated_products.begin(), accumulated_products.end(), accumulated_products.begin(), std::multiplies<std::size_t>());
@@ -36,7 +42,7 @@ auto nested_for_loop(std::array<std::size_t, Nm> const& dims, Runnable const& ru
 	auto n=accumulated_products.back();
 
 	for(auto i=0u;i<n;i++){
-		std::array<std::size_t, Nm> index_pack{i%accumulated_products[0]};
+		math_vec<std::size_t, Nm> index_pack{i%accumulated_products[0]};
 
 		for(auto d=1u;d<Nm;d++)
 			index_pack[d] = i % accumulated_products[d] / accumulated_products[d-1];
@@ -67,9 +73,9 @@ namespace detailed{
 
 template<typename T, std::size_t N>
 inline auto prepare_dims(
-		std::array<std::pair<T, T>, N>& ranges,
-		std::array<T, N> const& deltas,
-		std::array<std::size_t, N>& dims,
+		math_vec<std::pair<T, T>, N>& ranges,
+		math_vec<T, N> const& deltas,
+		math_vec<std::size_t, N>& dims,
 		bool& sign
 		) -> void {
 	sign = false;

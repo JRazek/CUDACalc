@@ -57,12 +57,12 @@ requires
 (mode == CalculationMode::cpu && params_counter::ArraySizeFromCallable<Function> == Nm)
 auto riemann_integral(
 		Function const& function, 
-		std::array<std::pair<T, T>, Nm> ranges,
-		std::array<T, Nm> const& deltas
+		math_vec<std::pair<T, T>, Nm> ranges,
+		math_vec<T, Nm> const& deltas
 ) -> T {
 	assert(detailed::positive_range(deltas));
 
-	using SizesArray=std::array<std::size_t, Nm>;
+	using SizesArray=math_vec<std::size_t, Nm>;
 
 	SizesArray dims;
 	bool sign;
@@ -74,7 +74,7 @@ auto riemann_integral(
 	nested_for_loop(
 		dims,
 		[&result, &function, &deltas, &ranges](SizesArray const& index_pack){
-			std::array<T, Nm> point;
+			math_vec<T, Nm> point;
 
 			for(auto i=0u;i<Nm;i++)
 				point[i] = index_pack[i] * deltas[i] + ranges[i].first;
@@ -112,8 +112,8 @@ requires
 (mode == CalculationMode::cuda)
 auto riemann_integral(
 		Function function, 
-		std::array<std::pair<T, T>, Nm> ranges,
-		std::array<T, Nm> const& deltas
+		math_vec<std::pair<T, T>, Nm> ranges,
+		math_vec<T, Nm> const& deltas
 ) -> T {
 	assert(detailed::positive_range(deltas));
 	return jr::calc::cuda::riemann_integral(function, ranges, deltas);
@@ -142,9 +142,9 @@ template<
 requires ( mode == jr::calc::CalculationMode::cpu )
 auto calculate_gradient(
 		Function function, 
-		std::array<T, Nm> points,
-		std::array<T, Nm> const& deltas,
-		std::array<T, Nm>& gradient
+		math_vec<T, Nm> points,
+		math_vec<T, Nm> const& deltas,
+		math_vec<T, Nm>& gradient
 ) -> void {
 	for(auto i=0u;i<Nm;i++){
 		auto value = function(points);
@@ -162,11 +162,10 @@ auto calculate_gradient(
 * @param function - function to differentiate
 * @param ranges - cartesian product of differentiation point ()
 * @param deltas - deltas for differentiation (dx, dy, ...)
-* @param gradient - result of a calculation
 *
 * @note ranges of integration are in relative order to deltas.
 *
-* @return 
+* @return device pointer to a sequence of size Nm 
 */
 template<
 	CalculationMode mode = jr::calc::CalculationMode::cpu,
@@ -178,11 +177,10 @@ template<
 requires ( mode == jr::calc::CalculationMode::cuda )
 auto calculate_gradient(
 		Function const& function, 
-		std::array<T, Nm> points,
-		std::array<T, Nm> const& deltas,
-		std::array<T, Nm>& gradient
-) -> void {
-//	jr::calc::cuda::calculate_gradient();
+		math_vec<T, Nm> const& points,
+		math_vec<T, Nm> const& deltas
+) -> thrust::device_vector<T> {
+	return jr::calc::cuda::calculate_gradient(function, points, deltas);
 }
 
 }

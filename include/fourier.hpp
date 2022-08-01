@@ -4,6 +4,7 @@
 #include <complex>
 #include <tuple>
 
+#include <utils.hpp>
 
 namespace jr::calc{
 	
@@ -19,8 +20,8 @@ requires
 (Nm == 1)
 auto fourier_series(
 		Function function, 
-		std::array<std::pair<T, T>, Nm> const& ranges,
-) -> std::array<std::complex<T>, Nm> {
+		math_vec<std::pair<T, T>, Nm> const& ranges,
+) -> math_vec<std::complex<T>, Nm> {
 	
 }
 

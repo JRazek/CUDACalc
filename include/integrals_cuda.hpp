@@ -16,9 +16,9 @@ template<
 >
 __device__
 auto get_index_pack(
-		std::array<std::size_t, Nm> const& accumulated_products, 
+		math_vec<std::size_t, Nm> const& accumulated_products, 
 		std::size_t const index,
-		std::array<std::size_t, Nm>& index_pack) -> void {
+		math_vec<std::size_t, Nm>& index_pack) -> void {
 	index_pack[0] = index % accumulated_products[0];
 
 	for(auto d=1u;d<Nm;d++)
@@ -48,7 +48,7 @@ auto riemann_integral_kernel(
 	auto const id=threadIdx.x + blockIdx.x*blockDim.x;
 
 	__shared__
-	std::array<std::size_t, Nm> accumulated_products;
+	math_vec<std::size_t, Nm> accumulated_products;
 
 	if(threadIdx.x == 0){
 		copy(accumulated_products_global, accumulated_products.begin(), Nm);
@@ -57,10 +57,10 @@ auto riemann_integral_kernel(
 	__syncthreads();
 
 	if(id<accumulated_products.back()){
-		std::array<std::size_t, Nm> index_pack;
+		math_vec<std::size_t, Nm> index_pack;
 		get_index_pack(accumulated_products, id, index_pack);
 
-		std::array<T, Nm> point;
+		math_vec<T, Nm> point;
 
 		for(auto i=0u;i<Nm;i++)
 			point[i] = index_pack[i] * deltas[i] + ranges[i].first;
@@ -73,17 +73,37 @@ auto riemann_integral_kernel(
 
 template<
 	Arithmetic T,
+	std::size_t Nm,
+	RealFunction Function
+>
+__global__
+auto gradient_kernel(
+		Function const& function, 
+		const T* points,
+		const T* deltas, 
+		T* result_ptr
+) -> void { //TODO - the question is if it is worth at all.
+	auto const id=threadIdx.x + blockIdx.x*blockDim.x;
+
+	if (id < Nm){
+		
+	}
+}
+
+
+template<
+	Arithmetic T,
 	std::size_t kBlockSize = 64,
 	RealFunction Function,
 	std::size_t Nm
 >
 auto riemann_integral(
 		Function const& function, 
-		std::array<std::pair<T, T>, Nm>& ranges,
-		std::array<T, Nm> const& deltas
+		math_vec<std::pair<T, T>, Nm>& ranges,
+		math_vec<T, Nm> const& deltas
 ) -> T {
 
-	using SizesArray=std::array<std::size_t, Nm>;
+	using SizesArray=math_vec<std::size_t, Nm>;
 
 	SizesArray dims;
 	bool sign;
@@ -124,10 +144,14 @@ template<
 >
 auto calculate_gradient(
 		Function const& function, 
-		std::array<T, Nm> points,
-		std::array<T, Nm> const& deltas,
-		std::array<T, Nm>& gradient
-) -> void {
+		math_vec<T, Nm> const& points,
+		math_vec<T, Nm> const& deltas
+) -> thrust::device_vector<T> {
+
+	thrust::device_vector<T> points_dev(points.begin(), points.end());
+	thrust::device_vector<T> deltas_dev(deltas.begin(), deltas.end());
+
+	thrust::device_vector<T> gradient_dev(Nm);
 	
 }
 
