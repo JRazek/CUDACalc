@@ -13,6 +13,7 @@
 #include <numeric>
 #include <cassert>
 #include <ranges>
+#include <algorithm>
 
 #include "integrals_cuda.hpp"
 
@@ -26,15 +27,13 @@ template<typename T, typename Function>
 using ParamSizedArray = std::array<T, params_counter::ArraySizeFromCallable<Function>>;
 
 auto inline positive_range(std::ranges::range auto const& range) -> bool {
-	for(auto const& e : range)
-		if(e < 0) return false;
-	return true;
+	return std::all_of(range.begin(), range.end(), [](auto const n){ return n>=0; });
 }
 
 }
 
 /**
-* @brief calculates approximated value of riemann integral
+* @brief calculates approximated value of riemann integral over R^n -> R^1 function
 *
 * @tparam Function - type of function to integrate
 * @tparam T - return type of integral
@@ -90,7 +89,7 @@ auto riemann_integral(
 }
 
 /**
-* @brief calculates approximated value of riemann integral
+* @brief calculates approximated value of riemann integral over R^n -> R^1 function
 *
 * @tparam Function - type of function to integrate
 * @tparam T - return type of integral
@@ -121,13 +120,14 @@ auto riemann_integral(
 }
 
 /**
-* @brief calculates approximated derivative of a function
+* @brief calculates approximated derivative of a function over R^n -> R^1 function
 *
 * @tparam Function - type of function to differentiate
 * @tparam T - return type of function
 * @param function - function to differentiate
 * @param ranges - cartesian product of differentiation point ()
 * @param deltas - deltas for differentiation (dx, dy, ...)
+* @param gradient - result of a calculation
 *
 * @note ranges of integration are in relative order to deltas.
 *
@@ -142,14 +142,48 @@ template<
 requires ( mode == jr::calc::CalculationMode::cpu )
 auto calculate_gradient(
 		Function function, 
-		std::array<T, Nm> const& point,
-		std::array<T, Nm> const& deltas
-) -> T {
-	return {};
+		std::array<T, Nm> points,
+		std::array<T, Nm> const& deltas,
+		std::array<T, Nm>& gradient
+) -> void {
+	for(auto i=0u;i<Nm;i++){
+		auto value = function(points);
+		points[i] += deltas[i];
+		auto high = function(points);
+		gradient[i] = (high - value) / deltas[i];
+	}
 }
 
-
-
+/**
+* @brief calculates approximated derivative of a function over R^n -> R^1 function
+*
+* @tparam Function - type of function to differentiate
+* @tparam T - return type of function
+* @param function - function to differentiate
+* @param ranges - cartesian product of differentiation point ()
+* @param deltas - deltas for differentiation (dx, dy, ...)
+* @param gradient - result of a calculation
+*
+* @note ranges of integration are in relative order to deltas.
+*
+* @return 
+*/
+template<
+	CalculationMode mode = jr::calc::CalculationMode::cpu,
+	std::size_t kBlockSize = 64,
+	Arithmetic T,
+	RealFunction Function,
+	std::size_t Nm
+>
+requires ( mode == jr::calc::CalculationMode::cuda )
+auto calculate_gradient(
+		Function const& function, 
+		std::array<T, Nm> points,
+		std::array<T, Nm> const& deltas,
+		std::array<T, Nm>& gradient
+) -> void {
+//	jr::calc::cuda::calculate_gradient();
+}
 
 }
 

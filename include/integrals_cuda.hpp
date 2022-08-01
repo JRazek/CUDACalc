@@ -115,5 +115,21 @@ auto riemann_integral(
 		thrust::reduce(deltas_dev.begin(), deltas_dev.end(), T(sign ? -1 : 1), thrust::multiplies<T>());
 }
 
+
+template<
+	Arithmetic T,
+	std::size_t kBlockSize = 64,
+	RealFunction Function,
+	std::size_t Nm
+>
+auto calculate_gradient(
+		Function const& function, 
+		std::array<T, Nm> points,
+		std::array<T, Nm> const& deltas,
+		std::array<T, Nm>& gradient
+) -> void {
+	
+}
+
 }
 
