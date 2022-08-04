@@ -4,6 +4,7 @@
 #include <type_traits>
 #include <array>
 #include <tuple>
+#include <complex>
 
 namespace jr::calc{
 
@@ -58,10 +59,22 @@ static constexpr auto ArraySizeFromCallable = std::tuple_size_v<
 	>
 >;
 
+template <typename T>
+using FirstFunctionParam = 
+	std::remove_cvref_t<
+			std::tuple_element_t<0, typename FunctionArgs<T>::args>
+	>;
+
 }
 
-template <typename T>
-concept RealFunction = true;
+template<typename T>
+struct is_complex_t : public std::false_type {};
+
+template<typename T>
+struct is_complex_t<std::complex<T>> : public std::true_type {};
+
+template<typename T>
+static constexpr auto is_complex_v = is_complex_t<T>::value;
 
 template <typename... T>
 concept ArithmeticParamPack = 
@@ -69,7 +82,28 @@ std::conjunction_v<std::is_arithmetic<T>...>;
 
 template <typename T>
 concept Arithmetic = 
-std::is_arithmetic_v<T>;
+std::is_arithmetic_v<T>
+or
+is_complex_v<T>;
+
+template <typename T>
+concept MathVector = 
+std::is_array_v<T>;
+
+template <typename T>
+concept RealFunction = true;
+
+template <typename T>
+concept VectorField = 
+MathVector<params_counter::FirstFunctionParam<T>>
+and
+MathVector<std::invoke_result_t<T, params_counter::FirstFunctionParam<T>>>;
+
+template <typename T>
+concept ScalarField = 
+MathVector<params_counter::FirstFunctionParam<T>>
+and
+Arithmetic<std::invoke_result_t<T, params_counter::FirstFunctionParam<T>>>;
 
 template<typename... Ts>
 concept AllSame = 
