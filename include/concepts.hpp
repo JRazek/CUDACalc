@@ -77,13 +77,21 @@ template<typename T>
 static constexpr auto is_complex_v = is_complex_t<T>::value;
 
 template <typename... T>
-concept ArithmeticParamPack = 
-std::conjunction_v<std::is_arithmetic<T>...>;
+concept RealTypeParamPack = 
+std::conjunction_v<std::is_arithmetic<T>...>; //arithmetic is equivalent to real
 
 template <typename T>
-concept Arithmetic = 
+concept ScalarType = 
 std::is_arithmetic_v<T>
 or
+is_complex_v<T>;
+
+template <typename T>
+concept RealType = 
+std::is_arithmetic_v<T>;
+
+template <typename T>
+concept ComplexType = 
 is_complex_v<T>;
 
 template <typename T>
@@ -103,7 +111,7 @@ template <typename T>
 concept ScalarField = 
 MathVector<params_counter::FirstFunctionParam<T>>
 and
-Arithmetic<std::invoke_result_t<T, params_counter::FirstFunctionParam<T>>>;
+ScalarType<std::invoke_result_t<T, params_counter::FirstFunctionParam<T>>>;
 
 template<typename... Ts>
 concept AllSame = 
@@ -116,7 +124,7 @@ RealFunction<Function>
 &&
 params_counter::FunctionArgsCount<Function> == sizeof...(Args)
 &&
-ArithmeticParamPack<Args...>
+RealTypeParamPack<Args...>
 &&
 AllSame<Args...>;
 

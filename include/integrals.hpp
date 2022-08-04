@@ -49,7 +49,7 @@ auto inline positive_range(std::ranges::range auto const& range) -> bool {
 */
 template<
 	CalculationMode mode = CalculationMode::cpu,
-	Arithmetic T,
+	RealType T,
 	RealFunction Function,
 	std::size_t Nm
 >
@@ -104,7 +104,7 @@ auto riemann_integral(
 template<
 	CalculationMode mode,
 	std::size_t kBlockSize = 64,
-	Arithmetic T,
+	RealType T,
 	RealFunction Function,
 	std::size_t Nm
 >
@@ -135,7 +135,7 @@ auto riemann_integral(
 */
 template<
 	CalculationMode mode = jr::calc::CalculationMode::cpu,
-	Arithmetic T,
+	ScalarType T,
 	RealFunction Function,
 	std::size_t Nm
 >
@@ -170,7 +170,7 @@ auto calculate_gradient(
 template<
 	CalculationMode mode = jr::calc::CalculationMode::cpu,
 	std::size_t kBlockSize = 64,
-	Arithmetic T,
+	ScalarType T,
 	RealFunction Function,
 	std::size_t Nm
 >

@@ -33,7 +33,7 @@ auto print(auto const& range) -> void{
 }
 
 template<
-	Arithmetic T,
+	ScalarType T,
 	std::size_t Nm,
 	RealFunction Function
 >
@@ -72,7 +72,7 @@ auto riemann_integral_kernel(
 }
 
 template<
-	Arithmetic T,
+	ScalarType T,
 	std::size_t Nm,
 	RealFunction Function
 >
@@ -92,7 +92,7 @@ auto gradient_kernel(
 
 
 template<
-	Arithmetic T,
+	ScalarType T,
 	std::size_t kBlockSize = 64,
 	RealFunction Function,
 	std::size_t Nm
@@ -137,7 +137,7 @@ auto riemann_integral(
 
 
 template<
-	Arithmetic T,
+	ScalarType T,
 	std::size_t kBlockSize = 64,
 	RealFunction Function,
 	std::size_t Nm

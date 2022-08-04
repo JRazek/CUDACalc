@@ -10,7 +10,7 @@ namespace jr::calc{
 	
 template<
 	CalculationMode mode = CalculationMode::cpu,
-	Arithmetic T,
+	ScalarType T,
 	RealFunction Function,
 	std::size_t Nm
 >
