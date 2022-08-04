@@ -56,6 +56,15 @@ enum class CalculationMode{
 	cuda,
 };
 
+template <typename T>
+struct range{
+	T low, high;
+};
+
+template <typename T>
+auto operator<<(std::ostream& stream, range<T> const& range) -> std::ostream{
+	return stream<<"{low: "<<range.low<<", high: "<<range.high<<"}";
+}
 
 namespace cuda{
 
@@ -73,7 +82,7 @@ namespace detailed{
 
 template<typename T, std::size_t N>
 inline auto prepare_dims(
-		math_vec<std::pair<T, T>, N>& ranges,
+		math_vec<range<T>, N>& ranges,
 		math_vec<T, N> const& deltas,
 		math_vec<std::size_t, N>& dims,
 		bool& sign
@@ -81,12 +90,12 @@ inline auto prepare_dims(
 	sign = false;
 
 	for(auto i=std::size_t();i<ranges.size();i++){
-		if(ranges[i].first > ranges[i].second){ 
-			std::swap(ranges[i].first, ranges[i].second); 
+		if(ranges[i].low > ranges[i].high){ 
+			std::swap(ranges[i].low, ranges[i].high); 
 			sign = !sign;
 		}
 
-		auto range_size = ranges[i].second - ranges[i].first;
+		auto range_size = ranges[i].high - ranges[i].low;
 
 		dims[i] = std::ceil(range_size/deltas[i]);
 	}

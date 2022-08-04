@@ -57,7 +57,7 @@ requires
 (mode == CalculationMode::cpu && params_counter::ArraySizeFromCallable<Function> == Nm)
 auto riemann_integral(
 		Function const& function, 
-		math_vec<std::pair<T, T>, Nm> ranges,
+		math_vec<range<T>, Nm> ranges,
 		math_vec<T, Nm> const& deltas
 ) -> T {
 	assert(detailed::positive_range(deltas));
@@ -112,7 +112,7 @@ requires
 (mode == CalculationMode::cuda)
 auto riemann_integral(
 		Function function, 
-		math_vec<std::pair<T, T>, Nm> ranges,
+		math_vec<range<T>, Nm> ranges,
 		math_vec<T, Nm> const& deltas
 ) -> T {
 	assert(detailed::positive_range(deltas));

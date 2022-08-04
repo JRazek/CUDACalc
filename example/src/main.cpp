@@ -25,7 +25,7 @@ auto main() -> int {
 		return std::sin(x[0]) + std::cos(x[1]);
 	};
 
-	auto zero_pi_range=std::pair(0., 8*std::numbers::pi_v<double>);
+	auto zero_pi_range=jr::calc::range<double>{0., 8*std::numbers::pi_v<double>};
 	std::array ranges{zero_pi_range, zero_pi_range};
 
 	std::array deltas{.001, .001};

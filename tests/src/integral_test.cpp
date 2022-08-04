@@ -27,7 +27,7 @@ auto print_res(std::string const& worker, auto const duration, std::string const
 template<std::size_t N>
 struct TestPack{
 	std::array<double, N> deltas;
-	std::array<std::pair<double, double>, N> ranges;
+	std::array<jr::calc::range<double>, N> ranges;
 };
 
 template<std::size_t N>
@@ -43,11 +43,11 @@ auto generate_test_pack(std::size_t test_count, bool reversed_bounds = false) ->
 		auto& deltas=test_pack.deltas;
 
 		for(auto j=0u;j<N;j++){
-			ranges[j] = std::pair(unif(rd), unif(rd));
-			if(reversed_bounds && ranges[j].first > ranges[j].second) 
-				std::swap(ranges[j].first, ranges[j].second);
-			else if(!reversed_bounds && ranges[j].first < ranges[j].second) 
-				std::swap(ranges[j].first, ranges[j].second);
+			ranges[j] = jr::calc::range<double>{unif(rd), unif(rd)};
+			if(reversed_bounds && ranges[j].low > ranges[j].high) 
+				std::swap(ranges[j].low, ranges[j].high);
+			else if(!reversed_bounds && ranges[j].low < ranges[j].high) 
+				std::swap(ranges[j].low, ranges[j].high);
 		}
 
 		for(auto& d : deltas){
@@ -92,9 +92,9 @@ TEST(IntegralCudaTest2D, LinearReversedRange) {
 		return x[0];
 	};
 
-	constexpr auto analytic_integral = [](std::array<std::pair<double, double>, 1> const& ranges) -> double { 
+	constexpr auto analytic_integral = [](std::array<jr::calc::range<double>, 1> const& ranges) -> double { 
 		auto inverse = [](double x){ return 0.5 * x * x; };
-		return inverse(ranges[0].second) - inverse(ranges[0].first);
+		return inverse(ranges[0].high) - inverse(ranges[0].low);
 	};
 
 	auto test_packs = generate_test_pack<1>(10, true);
@@ -108,8 +108,8 @@ TEST(IntegralCudaTest2D, ConstantFunction) {
 		return 1;
 	};
 
-	constexpr auto analytic_integral = [](std::array<std::pair<double, double>, 2> const& ranges) -> double { 
-		return (ranges[0].second - ranges[0].first) * (ranges[1].second - ranges[1].first);
+	constexpr auto analytic_integral = [](std::array<jr::calc::range<double>, 2> const& ranges) -> double { 
+		return (ranges[0].high - ranges[0].low) * (ranges[1].high - ranges[1].low);
 	};
 
 	auto test_packs = generate_test_pack<2>(10);

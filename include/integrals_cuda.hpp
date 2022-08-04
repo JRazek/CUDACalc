@@ -40,7 +40,7 @@ template<
 __global__
 auto riemann_integral_kernel(
 		Function const& function, 
-		const std::pair<T, T>* ranges, 
+		const range<T>* ranges, 
 		const std::size_t* accumulated_products_global, 
 		const T* deltas, 
 		T* result_ptr
@@ -63,7 +63,7 @@ auto riemann_integral_kernel(
 		math_vec<T, Nm> point;
 
 		for(auto i=0u;i<Nm;i++)
-			point[i] = index_pack[i] * deltas[i] + ranges[i].first;
+			point[i] = index_pack[i] * deltas[i] + ranges[i].low;
 
 		auto res=function(point);
 
@@ -99,7 +99,7 @@ template<
 >
 auto riemann_integral(
 		Function const& function, 
-		math_vec<std::pair<T, T>, Nm>& ranges,
+		math_vec<range<T>, Nm>& ranges,
 		math_vec<T, Nm> const& deltas
 ) -> T {
 
@@ -117,7 +117,7 @@ auto riemann_integral(
 
 	thrust::device_vector<T> result_dev_vector(total_count);
 	thrust::device_vector<std::size_t> accumulated_products_dev(accumulated_products.begin(), accumulated_products.end());
-	thrust::device_vector<std::pair<T, T>> ranges_dev(ranges.begin(), ranges.end());
+	thrust::device_vector<range<T>> ranges_dev(ranges.begin(), ranges.end());
 	thrust::device_vector<T> deltas_dev(deltas.begin(), deltas.end());
 
 	riemann_integral_kernel<T, Nm><<<total_count/kBlockSize+1, kBlockSize>>>(

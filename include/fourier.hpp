@@ -20,7 +20,7 @@ requires
 (Nm == 1)
 auto fourier_series(
 		Function function, 
-		math_vec<std::pair<T, T>, Nm> const& ranges,
+		math_vec<range<T>, Nm> const& ranges,
 ) -> math_vec<std::complex<T>, Nm> {
 	
 }
