@@ -44,7 +44,7 @@ cuda_calc_library = static_library(
 )
 
 
-cuda_calc = declare_dependency(include_directories: incdir, link_with : cuda_calc_library)
+cuda_calc_dep = declare_dependency(include_directories: incdir, link_with : cuda_calc_library)
 
 
 subdir('example')
