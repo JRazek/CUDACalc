@@ -5,7 +5,7 @@ integral_test=executable(
     include_directories : incdir,
     cpp_args: cpp_build_args,
 	link_args: cpp_link_args,
-    dependencies: [cuda_calc, gtest_dep]
+    dependencies: [cuda_calc_dep, gtest_dep]
 )
 
 

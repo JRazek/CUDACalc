@@ -4,7 +4,7 @@ example_app=executable(
     include_directories : incdir,
     cpp_args: cpp_build_args,
 	link_args: cpp_link_args,
-    dependencies: [cuda_calc]
+    dependencies: [cuda_calc_dep]
 )
 
 

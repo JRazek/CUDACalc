@@ -7,8 +7,10 @@ Early stage of library for real/complex numeric analysis.
 - [x] Riemann integral [cuda]
 - [ ] Monte Carlo integral [cpu]
 - [ ] Monte Carlo integral [cuda]
-- [ ] Gradient [cpu]
+- [X] Gradient [cpu]
 - [ ] Gradient [cuda]
+- [ ] Line integral(real/complex) [cpu] - in progess...
+- [ ] Line integral(real/complex) [cuda] - in progess...
 - [ ] Fourier Series [cpu] - in progess...
 - [ ] Fourier Series [cuda]
 - [ ] Fourier Transform (FFT) [cpu]
