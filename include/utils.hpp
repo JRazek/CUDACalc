@@ -104,9 +104,7 @@ auto operator<<(std::ostream& stream, range<T> const& range) -> std::ostream{
 
 namespace cuda{
 
-template<
-	typename T
->
+template<typename T>
 __device__
 auto copy(const T* input, T* output, std::size_t size) -> void{
 	memcpy(static_cast<void*>(output), static_cast<const void*>(input), size*sizeof(T));
@@ -118,7 +116,7 @@ template <
 	ScalarType Scalar,
 	std::size_t N
 >
-auto operator+=(math_vec<Scalar, N>& lhs, math_vec<Scalar, N>& rhs) -> math_vec<Scalar, N>& {
+auto operator+=(math_vec<Scalar, N>& lhs, math_vec<Scalar, N> const& rhs) -> math_vec<Scalar, N>& {
 	std::transform(
 			std::begin(lhs),
 			std::end(lhs),
@@ -133,7 +131,7 @@ template <
 	ScalarType Scalar,
 	std::size_t N
 >
-auto operator-=(math_vec<Scalar, N>& lhs, math_vec<Scalar, N>& rhs) -> math_vec<Scalar, N>& {
+auto operator-=(math_vec<Scalar, N>& lhs, math_vec<Scalar, N> const& rhs) -> math_vec<Scalar, N>& {
 	std::transform(
 			std::begin(lhs),
 			std::end(lhs),
