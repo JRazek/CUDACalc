@@ -124,9 +124,9 @@ TEST(IntegralCudaTest2D, ComplexFunction) {
 //		return x[0];
 //	};
 //
-//	std::array arr{ std::pair(std::complex{1., 0.}, std::complex{1., 0.}) };
+//	jr::calc::math_vec<jr::calc::range<std::complex<double>>, 1> arr{ jr::calc::range<std::complex<double>>{std::complex{1., 0.}, std::complex{1., 0.}} };
 
-//	jr::calc::riemann_integral(function, arr, std::complex{1, 0});
+//	jr::calc::riemann_integral(function, arr, std::array{std::complex{1., 0}});
 }
 
 

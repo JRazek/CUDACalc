@@ -67,14 +67,17 @@ using FirstFunctionParam =
 
 }
 
-template<typename T>
-struct is_complex_t : public std::false_type {};
+template <typename T>
+static constexpr auto is_std_array_v = true;
 
 template<typename T>
-struct is_complex_t<std::complex<T>> : public std::true_type {};
+struct is_complex : public std::false_type {};
 
 template<typename T>
-static constexpr auto is_complex_v = is_complex_t<T>::value;
+struct is_complex<std::complex<T>> : public std::true_type {};
+
+template<typename T>
+static constexpr auto is_complex_v = is_complex<T>::value;
 
 template <typename... T>
 concept RealTypeParamPack = 
@@ -96,10 +99,7 @@ is_complex_v<T>;
 
 template <typename T>
 concept MathVector = 
-std::is_array_v<T>;
-
-template <typename T>
-concept RealFunction = true;
+is_std_array_v<T>;
 
 template <typename T>
 concept VectorField = 
@@ -112,6 +112,10 @@ concept ScalarField =
 MathVector<params_counter::FirstFunctionParam<T>>
 and
 ScalarType<std::invoke_result_t<T, params_counter::FirstFunctionParam<T>>>;
+
+template <typename T>
+concept RealFunction = 
+ScalarField<T>;
 
 template<typename... Ts>
 concept AllSame = 

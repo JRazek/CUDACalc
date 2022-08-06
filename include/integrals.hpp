@@ -83,7 +83,7 @@ auto riemann_integral(
 		}
 	);
 
-	result *= std::accumulate(deltas.begin(), deltas.end(), T(sign ? -1 : 1), std::multiplies<T>());
+	result *= std::reduce(deltas.begin(), deltas.end(), T(sign ? -1 : 1), std::multiplies<T>());
 
 	return result;
 }
@@ -181,6 +181,57 @@ auto calculate_gradient(
 		math_vec<T, Nm> const& deltas
 ) -> thrust::device_vector<T> {
 	return jr::calc::cuda::calculate_gradient(function, points, deltas);
+}
+
+/**
+* @brief calculates approximated line integral of a scalar field
+*
+* @tparam Function - type of function to integrate
+* @tparam T - return type of function
+* @param function - function to differentiate
+* @param param_range - range for line integral
+* @param dimension_function - vector field describing the path
+* @param delta - dt for the parametrized function
+*
+* @note ranges of integration are in relative order to deltas.
+*
+* @return device pointer to a sequence of size Nm 
+*/
+template<
+	CalculationMode mode = CalculationMode::cpu,
+	ScalarType T,
+	ScalarType Y,
+	ScalarField Function,
+	VectorField PathFunction
+>
+requires 
+(
+mode == CalculationMode::cpu 
+&&
+params_counter::ArraySizeFromCallable<PathFunction> == 1
+)
+auto calculate_line_integral(
+		Function const& scalar_field, 
+		range<T> const& param_range,
+		PathFunction const& dimension_function,
+		Y const dt
+) -> T {
+	std::size_t steps = std::ceil((param_range.high - param_range.low) / dt);
+	auto t = param_range.low;
+	auto res = T();
+
+	for(auto i = 0u; i<steps; i++){
+		auto point = dimension_function({t});
+		auto point_dt = dimension_function({t+dt});
+		point_dt-=point;
+		auto ds = euclidean_norm(point_dt);
+
+		res += scalar_field(point) * ds;
+		
+		t+=dt;
+	}
+
+	return res;
 }
 
 }
