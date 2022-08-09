@@ -19,19 +19,13 @@ Early stage of library for real/complex numeric analysis.
 ## Compilation
 CUDA version 11.5 is required.
 
-In order to compile first specify clang++ and clang as your compilers for meson.
+In order to setup meson with clang simply run
 ```bash
-export CC='clang'
-export CXX='clang++'
-```
-Optionally you can add these lines to your `~/.bashrc` file with:
-```bash
-echo -e "export CC=clang\nexport CXX=clang++" >> ~/.bashrc
+meson setup --cross-file ./cross/native.ini build
 ```
 
 Then compile by running 
 ```bash
-meson build 
 meson compile -C build
 ```
 

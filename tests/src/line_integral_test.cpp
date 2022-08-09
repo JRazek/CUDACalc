@@ -39,7 +39,7 @@ TEST(LineIntegral, WaveFunction){
 		return std::cos(x[0])*std::cos(x[1]);
 	};
 	
-	double delta = 1e-6;
+	double delta = 0.01;
 	
 	range<double> range{0., 2*std::numbers::pi};
 
