@@ -1,12 +1,10 @@
 #pragma once
 
-#include "utils.hpp"
 #include <concepts>
 #include <cstddef>
 #include <functional>
 #include <type_traits>
 #include <array>
-#include <concepts.hpp>
 #include <utility>
 #include <cmath>
 #include <iostream>
@@ -16,6 +14,8 @@
 #include <algorithm>
 
 #include "integrals_cuda.hpp"
+#include "concepts.hpp"
+#include "utils.hpp"
 
 
 
@@ -215,10 +215,14 @@ auto calculate_line_integral(
 		range<T> const& param_range,
 		PathFunction const& dimension_function,
 		Y const dt
-) -> T {
+) -> auto {
 	std::size_t steps = std::ceil((param_range.high - param_range.low) / dt);
 	auto t = param_range.low;
-	auto res = T();
+	
+	using PathFunctionReturnType = std::invoke_result_t<PathFunction, std::array<Y, 1>>;
+	using ScalarFieldReturnType = std::invoke_result_t<Function, PathFunctionReturnType>;
+	
+	auto res = ScalarFieldReturnType();
 
 	for(auto i = 0u; i<steps; i++){
 		auto point = dimension_function({t});

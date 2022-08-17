@@ -142,4 +142,31 @@ auto operator-=(math_vec<Scalar, N>& lhs, math_vec<Scalar, N> const& rhs) -> mat
 	return lhs;
 }
 
+
+template <
+	RealType T,
+	RealType Y
+>
+constexpr auto operator*(Y const& lhs, std::complex<T> const& rhs){
+	return rhs * lhs;
+}
+
+template <
+	RealType T,
+	RealType Y
+>
+constexpr auto operator*(std::complex<T> const& lhs, Y const& rhs){
+	using R = std::common_type_t<T, Y>;
+	
+	if constexpr (std::is_same_v<T, Y>){
+		return lhs * rhs;
+	}
+	else if constexpr (std::is_same_v<R, T>){
+		return lhs * R(rhs);
+	}
+	else {
+		return std::complex<R>{lhs.real(), lhs.imag()} * rhs;
+	}
+}
+
 }
