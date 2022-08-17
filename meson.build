@@ -5,6 +5,8 @@ project(
 )
 
 cpp = meson.get_compiler('cpp')
+cmake = import('cmake')
+
 
 incdir = include_directories(
     'include',
@@ -28,8 +30,6 @@ endif
 
 
 thrust_dep = dependency('thrust', required: true)
-
-gtest_dep = dependency('gtest', required: true)
 
 
 cuda_lib=cpp.find_library('cudart_static', dirs: '/usr/local/cuda/lib64', required: true)

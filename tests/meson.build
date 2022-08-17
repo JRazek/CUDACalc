@@ -1,3 +1,6 @@
+gtest_proj = subproject('gtest')
+gtest_dep = dependency('gtest',  fallback : ['gtest', 'gtest_dep'])
+
 
 integral_test=executable(
     'integral_test',
