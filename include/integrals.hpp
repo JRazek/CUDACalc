@@ -59,17 +59,19 @@ auto riemann_integral(
 		Function const& function, 
 		math_vec<range<T>, Nm> ranges,
 		math_vec<T, Nm> const& deltas
-) -> T {
+) -> auto {
 	assert(detailed::positive_range(deltas));
 
 	using SizesArray=math_vec<std::size_t, Nm>;
+
+	using ScalarFieldReturnType = std::invoke_result_t<Function, math_vec<T, Nm>>;
 
 	SizesArray dims;
 	bool sign;
 
 	detailed::prepare_dims(ranges, deltas, dims, sign);
 
-	auto result=T();
+	auto result=ScalarFieldReturnType();
 
 	nested_for_loop(
 		dims,
@@ -77,7 +79,7 @@ auto riemann_integral(
 			math_vec<T, Nm> point;
 
 			for(auto i=0u;i<Nm;i++)
-				point[i] = index_pack[i] * deltas[i] + ranges[i].first;
+				point[i] = index_pack[i] * deltas[i] + ranges[i].low;
 
 			result += function(point);
 		}

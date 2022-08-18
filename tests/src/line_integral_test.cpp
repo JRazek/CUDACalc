@@ -68,9 +68,9 @@ TEST(LineIntegral, ComplexFunction) {
   auto numerical_res =
       calculate_line_integral(scalar_field, range, curve, delta);
 
-  auto distance = std::norm(numerical_res-expected_res);
+  auto distance_sq = std::norm(numerical_res-expected_res);
 
-  EXPECT_NEAR(distance, 0, 0.00001);
+  EXPECT_NEAR(distance_sq, 0, 0.00001);
 }
 
 auto main() -> int {
