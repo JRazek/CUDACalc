@@ -129,7 +129,7 @@ auto riemann_integral(
 * @param function - function to differentiate
 * @param ranges - cartesian product of differentiation point ()
 * @param deltas - deltas for differentiation (dx, dy, ...)
-* @param gradient - result of a calculation
+* @param result_gradient - result of a calculation
 *
 * @note ranges of integration are in relative order to deltas.
 *
@@ -146,13 +146,13 @@ auto calculate_gradient(
 		Function function, 
 		math_vec<T, Nm> points,
 		math_vec<T, Nm> const& deltas,
-		math_vec<T, Nm>& gradient
+		math_vec<T, Nm>& result_gradient
 ) -> void {
 	for(auto i=0u;i<Nm;i++){
 		auto value = function(points);
 		points[i] += deltas[i];
 		auto high = function(points);
-		gradient[i] = (high - value) / deltas[i];
+		result_gradient[i] = (high - value) / deltas[i];
 	}
 }
 
@@ -202,7 +202,7 @@ auto calculate_gradient(
 template<
 	CalculationMode mode = CalculationMode::cpu,
 	ScalarType T,
-	ScalarType Y,
+	RealType Y,
 	ScalarField Function,
 	VectorField PathFunction
 >

@@ -11,8 +11,8 @@ Early stage of library for real/complex numeric analysis.
 - [ ] Gradient [cuda]
 - [X] Line integral(scalar field) [cpu]
 - [ ] Line integral(scalar field) [cuda] - in progess...
-- [ ] Fourier Series [cpu] - in progess...
-- [ ] Fourier Series [cuda]
+- [X] Fourier Series [cpu]
+- [ ] Fourier Series [cuda] - in progrss...
 - [ ] Fourier Transform (FFT) [cpu]
 - [ ] Fourier Transform (FFT) [cuda]
 

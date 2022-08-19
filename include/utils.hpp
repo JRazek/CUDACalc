@@ -23,6 +23,9 @@ enum class CalculationMode{
 template <typename T>
 struct range{
 	T low, high;
+	auto size() const noexcept{
+		return high - low;
+	}
 };
 
 template <typename Input>
@@ -142,15 +145,6 @@ auto operator-=(math_vec<Scalar, N>& lhs, math_vec<Scalar, N> const& rhs) -> mat
 	return lhs;
 }
 
-
-template <
-	RealType T,
-	RealType Y
->
-constexpr auto operator*(Y const& lhs, std::complex<T> const& rhs){
-	return rhs * lhs;
-}
-
 template <
 	RealType T,
 	RealType Y
@@ -167,6 +161,14 @@ constexpr auto operator*(std::complex<T> const& lhs, Y const& rhs){
 	else {
 		return std::complex<R>{lhs.real(), lhs.imag()} * rhs;
 	}
+}
+
+template <
+	RealType T,
+	RealType Y
+>
+constexpr auto operator*(Y const& lhs, std::complex<T> const& rhs){
+	return rhs * lhs;
 }
 
 }
