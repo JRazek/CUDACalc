@@ -34,6 +34,7 @@ auto print(auto const& range) -> void{
 
 template<
 	ScalarType T,
+	ScalarType Y,
 	std::size_t Nm,
 	RealFunction Function
 >
@@ -43,7 +44,7 @@ auto riemann_integral_kernel(
 		const range<T>* ranges, 
 		const std::size_t* accumulated_products_global, 
 		const T* deltas, 
-		T* result_ptr
+		Y* result_ptr
 ) -> void{
 	auto const id=threadIdx.x + blockIdx.x*blockDim.x;
 
@@ -105,6 +106,10 @@ auto riemann_integral(
 
 	using SizesArray=math_vec<std::size_t, Nm>;
 
+	using SizesArray=math_vec<std::size_t, Nm>;
+
+	using ScalarFieldReturnType = std::invoke_result_t<Function, math_vec<T, Nm>>;
+
 	SizesArray dims;
 	bool sign;
 
@@ -115,12 +120,12 @@ auto riemann_integral(
 
 	auto total_count=accumulated_products.back();
 
-	thrust::device_vector<T> result_dev_vector(total_count);
+	thrust::device_vector<ScalarFieldReturnType> result_dev_vector(total_count);
 	thrust::device_vector<std::size_t> accumulated_products_dev(accumulated_products.begin(), accumulated_products.end());
 	thrust::device_vector<range<T>> ranges_dev(ranges.begin(), ranges.end());
 	thrust::device_vector<T> deltas_dev(deltas.begin(), deltas.end());
 
-	riemann_integral_kernel<T, Nm><<<total_count/kBlockSize+1, kBlockSize>>>(
+	riemann_integral_kernel<T, ScalarFieldReturnType, Nm><<<total_count/kBlockSize+1, kBlockSize>>>(
 		function, 
 		thrust::raw_pointer_cast(ranges_dev.data()), 
 		thrust::raw_pointer_cast(accumulated_products_dev.data()), 

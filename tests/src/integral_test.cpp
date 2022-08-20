@@ -71,18 +71,6 @@ auto run_test(Function const& function, Integral const& analytic_integral,
   EXPECT_NEAR(real_result, res_cuda, 0.1);
 }
 
-// TODO
-TEST(IntegralCudaTest2D, SinCosProd) {
-  //	constexpr auto function=[](std::array<double, 2> const& x) -> double {
-  //		return std::sin(x[0]) + std::cos(x[1]);
-  //	};
-  //
-  //	constexpr auto analytic_integral = [](std::array<std::pair<double,
-  // double>, 2> const& ranges) -> double { 		return (ranges[0].second
-  // - ranges[0].first) * (ranges[1].second - ranges[1].first);
-  //	};
-}
-
 TEST(IntegralCudaTest2D, LinearReversedRange) {
   constexpr auto function = [](std::array<double, 1> const& x) -> double {
     return x[0];
@@ -130,7 +118,7 @@ TEST(IntegralCudaTest2D, ComplexFunction) {
 
   auto expected_res = complex{0, 2};
 
-  math_vec<range<double>, 1> ranges{{ {0, 2} }};
+  math_vec<range<double>, 1> ranges{{{0, 2}}};
   math_vec<double, 1> deltas{0.001};
 
   auto numerical_res = riemann_integral(function, ranges, deltas);

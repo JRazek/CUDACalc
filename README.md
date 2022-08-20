@@ -8,11 +8,13 @@ Early stage of library for real/complex numeric analysis.
 - [ ] Monte Carlo integral [cpu]
 - [ ] Monte Carlo integral [cuda]
 - [X] Gradient [cpu]
-- [ ] Gradient [cuda]
+~~- [ ] Gradient [cuda] - will not support~~
+- [ ] Jacobian materix [cpu]
+- [ ] Jacobian materix [cuda] 
 - [X] Line integral(scalar field) [cpu]
 - [ ] Line integral(scalar field) [cuda] - in progess...
 - [X] Fourier Series [cpu]
-- [ ] Fourier Series [cuda] - in progrss...
+- [X] Fourier Series [cuda] 
 - [ ] Fourier Transform (FFT) [cpu]
 - [ ] Fourier Transform (FFT) [cuda]
 
