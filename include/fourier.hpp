@@ -16,8 +16,7 @@ template<
 	ScalarType T,
 	RealType Y
 >
-class FourierSeries{
-public:
+struct FourierSeries{
 
 	auto operator()(math_vec<Y, 1> const& t) const noexcept{
 		auto res = T();
@@ -66,7 +65,6 @@ public:
 		return n - shift;
 	}
 
-private:
 	constexpr static auto inline compl_i = std::complex{0., 1.};
 
 	range<Y> period_;
