@@ -128,6 +128,23 @@ TEST(IntegralCudaTest2D, ComplexFunction) {
   EXPECT_NEAR(distance_sq, 0, 0.0001);
 }
 
+TEST(IntegralCudaTest2D, ZeroRange) {
+  using namespace jr::calc;
+
+  constexpr auto function = [](std::array<double, 1> const& x) -> double {
+    return 5;
+  };
+
+  math_vec<range<double>, 1> ranges{{{0, 0}}};
+  math_vec<double, 1> deltas{0.001};
+
+  auto numerical_res = riemann_integral(function, ranges, deltas);
+
+  auto expected_res = 0.;
+
+  EXPECT_NEAR(numerical_res, expected_res, 0.0001);
+}
+
 auto main() -> int {
   ::testing::InitGoogleTest();
   return RUN_ALL_TESTS();
