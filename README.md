@@ -8,8 +8,8 @@ Early stage of library for real/complex numeric analysis.
 - [ ] Monte Carlo integral [cpu]
 - [ ] Monte Carlo integral [cuda]
 - [X] Gradient [cpu]
-- [ ] Jacobian materix [cpu]
-- [ ] Jacobian materix [cuda] 
+- [ ] Jacobian matrix [cpu]
+- [ ] Jacobian matrix [cuda] 
 - [X] Line integral(scalar field) [cpu]
 - [ ] Line integral(scalar field) [cuda] - in progess...
 - [X] Fourier Series [cpu]
